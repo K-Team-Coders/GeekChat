@@ -1,6 +1,6 @@
 <template>
   <div class="flex w-full justify-center p-6 gap-4 duration-500 min-h-screen">
-    <div class="mx-24 w-full outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500">
+    <div class="mx-56 w-full outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500">
       <div class="h-full px-2">
 
         <div class="relative h-full flex justify-center">
@@ -8,9 +8,9 @@
           <div class="h-[85vh] overflow-y-auto p-16 w-full mb-16">
             <!-- Входящее сообщение -->
             <div class="flex mb-4 cursor-pointer">
-              <div class="w-9 h-9 rounded-full flex items-center justify-center mr-2">
-                <img src="@/img/sova.jpg" alt="User Avatar"
-                  class="w-12 h-12 rounded-full">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center ml-2">
+                <img src="https://placehold.co/200x/b7a8ff/ffffff.svg?text=Я&font=Lato" alt="My Avatar"
+                  class="w-8 h-8 rounded-full">
               </div>
               <div class="flex max-w-96 bg-white rounded-lg p-3 gap-3 outline">
                 <p class="text-gray-700">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus est pariatur tenetur sint, animi vitae debitis! Voluptatem qui ducimus doloribus assumenda similique natus, eius, amet eaque ex ratione dolorem ut.</p>
@@ -27,28 +27,6 @@
                   class="w-8 h-8 rounded-full">
               </div>
             </div>
-
-            <div class="flex mb-4 cursor-pointer">
-              <div class="w-9 h-9 rounded-full flex items-center justify-center mr-2">
-                <img src="@/img/sova.jpg" alt="User Avatar"
-                  class="w-12 h-12 rounded-full">
-              </div>
-              <div class="flex max-w-96 bg-white rounded-lg p-3 gap-3 outline">
-                <p class="text-gray-700">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Delectus est pariatur tenetur sint, animi vitae debitis! Voluptatem qui ducimus doloribus assumenda similique natus, eius, amet eaque ex ratione dolorem ut.</p>
-              </div>
-            </div>
-
-            <!-- Исходящее сообщение -->
-            <div class="flex justify-end mb-4 cursor-pointer">
-              <div class="flex max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3">
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi mollitia minus obcaecati ullam deleniti repellendus officia at labore atque sequi ad laborum nesciunt suscipit, ut illo modi error sit expedita!</p>
-              </div>
-              <div class="w-9 h-9 rounded-full flex items-center justify-center ml-2">
-                <img src="https://placehold.co/200x/b7a8ff/ffffff.svg?text=Я&font=Lato" alt="My Avatar"
-                  class="w-8 h-8 rounded-full">
-              </div>
-            </div>
-            
           </div>
           
 
