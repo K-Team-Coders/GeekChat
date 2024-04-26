@@ -1,6 +1,6 @@
 from loguru import logger
 from fastapi import FastAPI
-from manager_connection import ConnectionManager
+from fastApi.manager_connection import ConnectionManager
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.websockets import WebSocketDisconnect, WebSocket
