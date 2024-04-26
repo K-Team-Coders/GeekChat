@@ -99,62 +99,7 @@ export default {
           route: "/assistant",
           isActive: this.$route.path === "/assistant",
         },
-        {
-          category: "Переводчик",
-          name: "translate",
-          classed: "w-8 h-8 text-yellow-400",
-          route: "/translater",
-          isActive: this.$route.path === "/translater",
-        },
-        {
-          category: "Распознать текст",
-          name: "eye",
-          classed: "w-8 h-8 text-purple-400",
-          route: "/scan_from_docs",
-          isActive: this.$route.path === "/scan_from_docs",
-        },
-        {
-          category: "Поиск документов",
-          name: "search",
-          classed: "w-8 h-8 text-green-400",
-          route: "/search_document",
-          isActive: this.$route.path === "/search_document",
-        },
-        {
-          category: "Распознать аудио",
-          name: "microphone",
-          classed: "w-8 h-8 text-red-700",
-          route: "/audio_recognition",
-          isActive: this.$route.path === "/audio_recognition",
-        },
-        {
-          category: "Преобразовать в аудио",
-          name: "gromko",
-          classed: "w-8 h-8 text-orange-400",
-          route: "/text_to_audio",
-          isActive: this.$route.path === "/text_to_audio",
-        },
-        {
-          category: "Распознать объект",
-          name: "flag",
-          classed: "w-8 h-8 text-red-400",
-          route: "/image_recognition",
-          isActive: this.$route.path === "/image_recognition",
-        },
-        {
-          category: "Сформировать документ",
-          name: "news",
-          classed: "w-8 h-8 text-green-200",
-          route: "/2",
-          isActive: this.$route.path === "/2",
-        },
-        {
-          category: "Поиск",
-          name: "viewgrid",
-          classed: "w-8 h-8 text-activeText duration-500",
-          route: "/",
-          isActive: this.$route.path === "/",
-        },
+  
       ];
     },
     isDarkMode() {
