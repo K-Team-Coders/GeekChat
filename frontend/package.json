@@ -1,0 +1,45 @@
+{
+  "name": "templates",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "@heroicons/vue": "^2.1.1",
+    "@vueuse/core": "^10.7.2",
+    "apexcharts": "^3.35.5",
+    "axios": "^0.27.2",
+    "bootstrap-icons": "^1.8.3",
+    "chart.js": "^3.9.1",
+    "core-js": "^3.8.3",
+    "d3": "^5.16.0",
+    "d3-axis": "^3.0.0",
+    "echarts": "^5.4.0",
+    "lodash": "^4.17.21",
+    "pdf.js": "^0.1.0",
+    "stream-http": "^3.2.0",
+    "tagcloud": "^1.1.0-1",
+    "TagCloud": "^2.3.2",
+    "v-charts": "^1.17.10",
+    "vue": "^3.2.13",
+    "vue-chartjs": "^4.1.2",
+    "vue-plotly": "^1.1.0",
+    "vue-router": "^4.0.3",
+    "vue-sidebar-menu-akahon": "^0.1.4",
+    "vue-yandex-maps": "^0.12.3",
+    "vue3-easy-data-table": "^1.5.39",
+    "vuewordcloud": "^19.0.0",
+    "vuex": "^4.0.2"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~5.0.8",
+    "@vue/cli-plugin-router": "~5.0.8",
+    "@vue/cli-plugin-vuex": "~5.0.8",
+    "@vue/cli-service": "~5.0.8",
+    "autoprefixer": "^10.4.12",
+    "postcss": "^8.4.16",
+    "tailwindcss": "^3.1.8"
+  }
+}
