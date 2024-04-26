@@ -6,8 +6,6 @@ from model import *
 from loguru import logger
 
 
-
-
 def connect_database():
     try:
         # Загрузка переменных среды из файла .env
@@ -27,7 +25,8 @@ def connect_database():
         # Создаем сессию
         Session = sessionmaker(bind=engine)
         session = Session()
-        logger.success(f"Successfully connected to session with credential: {db_user}:{db_password}@{db_host}/{db_name}")
+        logger.success(
+            f"Successfully connected to session with credential: {db_user}:{db_password}@{db_host}/{db_name}")
         return session
     except Exception as e:
         logger.error(str(e))

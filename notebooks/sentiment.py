@@ -6,7 +6,8 @@ tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 model = AutoModelForSequenceClassification.from_pretrained(model_checkpoint)
 if torch.cuda.is_available():
     model.cuda()
-    
+
+
 def get_sentiment(text, return_type='label'):
     """ Calculate sentiment of a text. `return_type` can be 'label', 'score' or 'proba' """
     with torch.no_grad():
@@ -18,8 +19,9 @@ def get_sentiment(text, return_type='label'):
         return proba.dot([-1, 0, 1])
     return proba
 
-text = 'всем привет'
-# classify the text
-print(get_sentiment(text, 'label'))
+
+# text = 'всем привет'
+# # classify the text
+# print(get_sentiment(text, 'label'))
 
 # ВЫВЕДЕТ либо нейтрал либо негатив либо позитив. Для нейтралов подавать команду "НЕ СЧИТАТЬ!"

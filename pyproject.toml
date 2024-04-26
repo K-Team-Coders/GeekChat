@@ -13,6 +13,8 @@ sqlalchemy = "^2.0.29"
 loguru = "^0.7.2"
 uvicorn = {extras = ["standard"], version = "^0.29.0"}
 gunicorn = {extras = ["standart"], version = "^22.0.0"}
+torch = "^2.3.0"
+transformers = "^4.40.1"
 
 
 [build-system]
