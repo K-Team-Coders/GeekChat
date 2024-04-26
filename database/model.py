@@ -10,12 +10,12 @@ class CommentInfo(Base):
     __tablename__ = 'comment_info'
 
     id = Column(Integer, primary_key=True)
-    id_session = Column(Integer, unique=True)
+    id_session = Column(Integer)
     user_name = Column(String)
     comment = Column(String)
-    emotional_coloring = Column(Integer)
-    stop_words = Column(Integer)
-    tech_issue = Column(Integer)
+    emotional_coloring = Column(Integer, default=0)
+    stop_words = Column(Integer, default=0)
+    tech_issue = Column(Integer, default=0)
 
 
 class Session(Base):
