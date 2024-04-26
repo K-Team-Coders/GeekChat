@@ -1,13 +1,9 @@
 from loguru import logger
 from fastapi import FastAPI
+from fastApi.manager_connection import ConnectionManager
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-
-from database.sqlalchemy import engine, session, base
-from database.models import *
-
-base.metadata.create_all(engine)
-current_session = session()
+from fastapi.websockets import WebSocketDisconnect, WebSocket
 
 app = FastAPI()
 
@@ -21,12 +17,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
-def root():
-    return {"message": "Hello World"}
+manager = ConnectionManager()
 
-@app.get("/add")
-def add():
-    for query in current_session.query(Messages):
-        print(query)
-    return JSONResponse({'holacora': "bang"})
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            logger.debug(data)
+
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        logger.info("WebSocket disconnect")
