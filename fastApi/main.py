@@ -3,11 +3,6 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from database.sqlalchemy import engine, session, base
-from database.models import *
-
-base.metadata.create_all(engine)
-current_session = session()
 
 app = FastAPI()
 
