@@ -11,6 +11,8 @@ fastapi = "^0.110.2"
 python-dotenv = "^1.0.1"
 sqlalchemy = "^2.0.29"
 loguru = "^0.7.2"
+uvicorn = {extras = ["standard"], version = "^0.29.0"}
+gunicorn = {extras = ["standart"], version = "^22.0.0"}
 
 
 [build-system]
