@@ -1,4 +1,4 @@
-FROM python:3.10-alpine
+FROM python:3.11
 
 COPY ../telegramBot/requirements.txt .
 
@@ -8,4 +8,4 @@ RUN [ "pip", "install", "-r", "requirements.txt"]
 
 COPY . .
 
-EXPOSE 8082
+EXPOSE 12345

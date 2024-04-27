@@ -1,0 +1,6 @@
+json
+socket
+telebot
+asyncio
+loguru
+python-dotenv

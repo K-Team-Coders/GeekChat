@@ -1,12 +1,16 @@
 import asyncio
+import json
+import socket
 import uuid
 from datetime import datetime
 from typing import Dict, List
-from loguru import logger
+
 import uvicorn
-from fastapi import FastAPI, WebSocket, HTTPException, Header
+from fastapi import FastAPI, WebSocket, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from loguru import logger
+from helper_funcion import *
+from notebooks.toxicity import toxicityAnalisis
 
 app = FastAPI()
 
@@ -23,6 +27,7 @@ app.add_middleware(
 # Структура данных для хранения комнат, пользователей и сообщений
 rooms: Dict[str, Dict[str, List[str]]] = {}
 metrics_history: Dict[str, Dict[str, List[float]]] = {}
+room_websockets: Dict[str, List[WebSocket]] = {}
 
 # Структура данных для хранения пользователей и их токенов
 users: Dict[str, str] = {}
@@ -40,6 +45,10 @@ async def save_messages():
                 file.write("\n".join(message_with_timestamp) + "\n")
 
 
+threshold_activity = 0
+threshold_mood = 0
+
+
 async def check_activity_and_mood():
     while True:
         await asyncio.sleep(60)  # Подождать 60 секунд
@@ -47,10 +56,15 @@ async def check_activity_and_mood():
         for room_id, room_data in rooms.items():
             users_count = len(room_data.get("users", []))
             messages_count = len(room_data.get("messages", []))
+
+            for msg in room_data.get("messages", []):
+                if toxicityAnalisis(msg) == 1:
+                    await send_notification("Агрессивное поведение пользователей в комнате номер: {}".format(room_id))
+
             positive_count = sum(
-                1 for msg in room_data.get("messages", []) if "хорошо" in msg.lower() or "позитив" in msg.lower())
+                1 for msg in room_data.get("messages", []) if score_calculate_emotion_coloring(msg) == 1)
             negative_count = sum(
-                1 for msg in room_data.get("messages", []) if "плохо" in msg.lower() or "негатив" in msg.lower())
+                1 for msg in room_data.get("messages", []) if score_calculate_emotion_coloring(msg) == -1)
             # Проверка, чтобы избежать деления на ноль
             if messages_count == 0:
                 activity = 0
@@ -64,12 +78,23 @@ async def check_activity_and_mood():
             metrics_history[room_id]["activity"].append(activity)
             metrics_history[room_id]["mood"].append(mood)
 
+            # Отправка уведомления, если активность или настроение ниже пороговых значений
+            if activity < threshold_activity:
+                await send_notification("Низкая активность в комнате номер: {}".format(room_id))
+            if mood < threshold_mood:
+                await send_notification("Негативный настрой в комнате номер: {}".format(room_id))
 
-# @app.on_event("startup")
-# async def startup_event():
-#     # Запустить сохранение сообщений и проверку активности и настроения
-#     await asyncio.create_task(save_messages())
-#     await asyncio.create_task(check_activity_and_mood())
+
+async def send_notification(message):
+    # Отправка сообщения через сокет
+    try:
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect(('localhost', 12345))  # Пример адреса и порта сервера
+        data = json.dumps({'message': message})
+        client_socket.send(data.encode('utf-8'))
+        client_socket.close()
+    except Exception as e:
+        logger.error(f"Error sending notification: {e}")
 
 
 @app.websocket("/ws/{room_id}/{token}")
@@ -86,23 +111,36 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, token: str):
     # Создание новой комнаты, если она еще не существует
     if room_id not in rooms:
         rooms[room_id] = {"users": [], "messages": [], "activity": 0, "mood": 0}
-
+    if room_id not in room_websockets:
+        room_websockets[room_id] = []
+    room_websockets[room_id].append(websocket)
     # Добавление пользователя к комнате
     rooms[room_id]["users"].append(username)
     logger.debug(rooms)
 
     # Асинхронный цикл для получения данных из сокета
     async def handle_messages():
-        async for data in websocket.iter_text():
-            await websocket.send_text(
-                "{\"username\":" + "\"" + f"{username}" + "\"" + ", \"message\":" + "\"" + f"{data}" + "\"" + ", \"date\":" + "\"" + f"{datetime.now()}" + "\"" + "}")
-            logger.debug(data)
-            # Сохранение сообщения для соответствующей комнаты
-            rooms[room_id]["messages"].append(f"{username}: {data}")
+        try:
+            async for data in websocket.iter_text():
+                await websocket.send_text(
+                    "{\"username\":" + "\"" + f"{username}" + "\"" + ", \"message\":" + "\"" + f"{data}" + "\"" + ", \"date\":" + "\"" + f"{datetime.now()}" + "\"" + "}")
+                logger.debug(data)
+                for ws in room_websockets.get(room_id, []):
+                    logger.debug(ws)
+                    if ws != websocket:
+                        await ws.send_text(
+                            "{\"username\":" + "\"" + f"{username}" + "\"" + ", \"message\":" + "\"" + f"{data}" + "\"" + ", \"date\":" + "\"" + f"{datetime.now()}" + "\"" + "}")
+                # Сохранение сообщения для соответствующей комнаты
+                rooms[room_id]["messages"].append(f"{username}: {data}")
+        finally:
+            if room_id in room_websockets:
+                room_websockets[room_id].remove(websocket)
 
-        # Запускаем обработку сообщений в отдельном потоке
+    # Запускаем обработку сообщений в отдельном потоке
 
     await asyncio.gather(handle_messages())
+    await asyncio.gather(save_messages())
+    await asyncio.gather(check_activity_and_mood())
 
 
 @app.get("/register")
