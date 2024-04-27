@@ -26,8 +26,10 @@
                 <img src="https://placehold.co/200x/b7a8ff/ffffff.svg?text=Я&font=Lato" alt="My Avatar"
                   class="w-8 h-8 rounded-full" />
               </div>
-              <div class="max-w-96 dark:bg-white bg-slate-200 rounded-lg p-3 gap-3">
-                <p class="text-gray-700">игорь хуесос?</p>
+              <div class="max-w-96 dark:bg-white bg-slate-200 rounded-lg p-3 h-20 gap-3">
+                <p class="text-orange-700">127.0.0.1</p>
+                <hr>
+                <p class="text-gray-700">Сообщение мне?</p>
                 <p class="text-gray-400 text-xs w-full text-end">20:00</p>
               </div>
             </div>
@@ -35,7 +37,9 @@
             <!-- Исходящее сообщение -->
             <div class="flex justify-end mb-4 cursor-pointer">
               <div class="max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3">
-                <p class="text-white">кисель хуесос?</p>
+                <p class="text-gray-200">127.0.0.2</p>
+                <hr>
+                <p class="text-white">Сообщение тебе?</p>
                 <p class="text-gray-200 text-xs w-full text-end">20:00</p>
               </div>
               <div class="w-9 h-9 rounded-full flex items-center justify-center ml-2">
@@ -43,6 +47,7 @@
                   class="w-8 h-8 rounded-full" />
               </div>
             </div>
+            
           </div>
           <div class="absolute bottom-3 w-full flex items-center gap-2 justify-center px-2">
             <input v-model="message"
@@ -72,7 +77,6 @@
   </div>
 </template>
 <script>
-import axios from "axios";
 import BaseIcon from "./BaseIcon.vue";
 import Switcher from "./Switcher.vue";
 export default {
@@ -85,6 +89,11 @@ export default {
     isDarkMode() {
       return this.$store.state.darkMode;
     },
+
+    spliceMessages(){
+      let messages = this.messages;
+      
+    }
   },
 
   data() {
@@ -93,6 +102,7 @@ export default {
       messages: [],
       sessionID: 1,
       isLoading: false,
+      myname: '',
       isError: false,
       isReady: false,
     };
@@ -141,7 +151,12 @@ export default {
     };
 
     connection.onmessage = (event) => {
-      this.messages.push(event.data);
+      if (JSON.parse(event.data.type) == "service"){
+        this.myname = event.data.message
+      }
+      else{
+        this.messages.push(event.data);
+      }
     };
   },
 };
