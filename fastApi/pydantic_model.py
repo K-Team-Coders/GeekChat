@@ -8,3 +8,9 @@ class SessionStatus(BaseModel):
 
 class User(BaseModel):
     user_name: str
+
+
+# Модель сообщения чата
+class ChatMessage(BaseModel):
+    username: str
+    message: str
