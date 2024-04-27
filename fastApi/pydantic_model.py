@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel
 
 
@@ -13,4 +15,4 @@ class User(BaseModel):
 # Модель сообщения чата
 class ChatMessage(BaseModel):
     username: str
-    message: str
+    message: List[str]
