@@ -27,17 +27,3 @@ class Session(Base):
     end_time = Column(DateTime, default=datetime.utcnow)
 
 
-class UserInSession(Base):
-    __tablename__ = 'user_in_session'
-
-    id = Column(Integer, primary_key=True, index=True)
-    session_id = Column(Integer)
-    user_name = Column(String, unique=True, index=True)
-    last_activity_update = Column(Integer, default=0)
-
-
-class SessionActivity(Base):
-    __tablename__ = 'session_activity'
-
-    id_session = Column(Integer, primary_key=True, unique=True)
-    activity = Column(Float)
