@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
 
-class Session(BaseModel):
+class SessionStatus(BaseModel):
     status: str
-    session_id: str
+    session_id: int
