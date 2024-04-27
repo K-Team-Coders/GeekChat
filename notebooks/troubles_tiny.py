@@ -16,6 +16,7 @@ model = BertForSequenceClassification.from_pretrained(
     num_labels=2
 ).to(device)
 
+
 def get_prediction(text):
     # prepare our text into tokenized sequence
     inputs = tokenizer(text, padding=True, truncation=True, max_length=300, return_tensors="pt").to(device)
@@ -24,7 +25,7 @@ def get_prediction(text):
     # get output probabilities by doing softmax
     probs = outputs[0].softmax(1)
     # executing argmax function to get the candidate label
-    labels = {'Нейтральное' : 0, 'Проблемы на линии': 1}
+    labels = {'Нейтральное': 0, 'Проблемы на линии': 1}
 
     classes = [0, 1]
 
