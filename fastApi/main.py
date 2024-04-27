@@ -11,7 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from helper_funcion import *
 from notebooks.toxicity import toxicityAnalisis
-
+from notebooks.ban_words import containsBanWords
+from notebooks.troubles_tiny import get_prediction
 app = FastAPI()
 
 origins = ["*"]
@@ -58,9 +59,12 @@ async def check_activity_and_mood():
             messages_count = len(room_data.get("messages", []))
 
             for msg in room_data.get("messages", []):
-                if toxicityAnalisis(msg) == 1:
-                    await send_notification("Агрессивное поведение пользователей в комнате номер:{}".format(room_id))
-
+                if toxicityAnalisis(msg) == 1 or :
+                    await send_notification("Агрессивное поведение пользователей в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                if containsBanWords(msg):
+                    await send_notification("Маты в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                if get_prediction(msg) == 1:
+                    await send_notification("Технические неполадки в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
             positive_count = sum(
                 1 for msg in room_data.get("messages", []) if score_calculate_emotion_coloring(msg) == 1)
             negative_count = sum(
