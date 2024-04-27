@@ -59,6 +59,9 @@ async def start_session(request: SessionStatus):
         )
         session.add(new_session)
         session.commit()
+        new_session_activity = SessionActivity(session_id=request.session_id)
+        session.add(new_session_activity)
+        session.commit()
     elif request.status == "stop":
         session_to_update = session.query(Session).filter_by(id=request.session_id).first()
         time_end = datetime.now()

@@ -33,9 +33,11 @@ class UserInSession(Base):
     id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer)
     user_name = Column(String, unique=True, index=True)
-    count_comment = Column(Integer, default=0)
-    positive_comments = Column(Integer, default=0)
-    negative_comments = Column(Integer, default=0)
-    activity = Column(Float, default=0.0)
-    last_activity_update = Column(Integer, default=int(datetime.now().timestamp()))
+    last_activity_update = Column(Integer, default=0)
 
+
+class SessionActivity(Base):
+    __tablename__ = 'session_activity'
+
+    id_session = Column(Integer, primary_key=True, unique=True)
+    activity = Column(Float)
