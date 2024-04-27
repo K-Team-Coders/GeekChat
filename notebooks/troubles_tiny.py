@@ -30,4 +30,4 @@ def get_prediction(text):
 
     prediction = classes[probs.argmax()]
     text_pred = list(labels.keys())[list(labels.values()).index(prediction)]
-    return text_pred
+    return labels[text_pred]
