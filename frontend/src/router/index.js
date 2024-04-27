@@ -5,14 +5,14 @@ const routes = [
     path: "/",
     name: "allservices",
 
-    component: () => import("../views/MainPage.vue"),
+    component: () => import("../views/ChatList.vue"),
   },
 
   {
-    path: "/assistant",
-    name: "Assistant",
+    path: "/dashboards",
+    name: "Dashboards",
 
-    component: () => import("../views/ChatList.vue"),
+    component: () => import("../views/Dashboards.vue"),
   },
   {
     path: "/notfound",
@@ -22,7 +22,7 @@ const routes = [
   },
   {
     path: "/chat",
-    name: "NotFound",
+    name: "Chat",
     component: () => import("../views/SessionChat.vue"),
     props: true,
   },
