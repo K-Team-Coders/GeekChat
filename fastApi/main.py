@@ -6,6 +6,7 @@ from loguru import logger
 import uvicorn
 from fastapi import FastAPI, WebSocket, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 
 app = FastAPI()
 
@@ -89,12 +90,19 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, token: str):
     # Добавление пользователя к комнате
     rooms[room_id]["users"].append(username)
     logger.debug(rooms)
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"username:{username}, message:{data}, date:{datetime.now()}")
-        logger.debug(data)
-        # Сохранение сообщения для соответствующей комнаты
-        rooms[room_id]["messages"].append(f"{username}: {data}")
+
+    # Асинхронный цикл для получения данных из сокета
+    async def handle_messages():
+        async for data in websocket.iter_text():
+            await websocket.send_text(
+                "{\"username\":" + "\"" + f"{username}" + "\"" + ", \"message\":" + "\"" + f"{data}" + "\"" + ", \"date\":" + "\"" + f"{datetime.now()}" + "\"" + "}")
+            logger.debug(data)
+            # Сохранение сообщения для соответствующей комнаты
+            rooms[room_id]["messages"].append(f"{username}: {data}")
+
+        # Запускаем обработку сообщений в отдельном потоке
+
+    await asyncio.gather(handle_messages())
 
 
 @app.get("/register")
