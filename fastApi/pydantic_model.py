@@ -2,6 +2,5 @@ from pydantic import BaseModel
 
 
 class Session(BaseModel):
-    start: str
+    status: str
     session_id: str
-    stop: str
