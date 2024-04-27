@@ -2,7 +2,7 @@ FROM python:3.11
 
 # set current directory for work
 # устанавливаем рабочий каталог
-WORKDIR ./
+WORKDIR ./fastApi
 
 # copy file requirements.txt to workdir
 # Копируем файл зависимостей в рабочую директорию внутри контейнера
@@ -22,4 +22,4 @@ COPY . .
 # Run
 # Запускаем проект
 
-CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "Application.main:app", "--bind", "0.0.0.0:8080"]
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "main:app", "--bind", "0.0.0.0:8080"]
