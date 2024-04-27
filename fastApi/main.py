@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.websockets import WebSocketDisconnect, WebSocket
 from fastApi.pydantic_model import SessionStatus, User
 from database.connector import *
-from fastApi.helper_function import *
 
 app = FastAPI()
 
@@ -24,6 +23,7 @@ loop = asyncio.get_event_loop()
 loop.create_task(manager.update_activity(session_id=1, interval=60, db=session))
 
 
+<<<<<<< HEAD
 @app.websocket("/ws/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: int, user_name: str):
     await manager.connect(websocket, session_id, user_name, db=session)
@@ -45,6 +45,15 @@ async def websocket_endpoint(websocket: WebSocket, session_id: int, user_name: s
                     user.positive_comments += 1
                 elif sentiment == -1:
                     user.negative_comments += 1
+=======
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+
+>>>>>>> parent of cf73d46 (fixes)
     except WebSocketDisconnect:
         manager.disconnect(websocket, session_id, session)
 
