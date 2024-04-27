@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.websockets import WebSocketDisconnect, WebSocket
 from fastApi.pydantic_model import SessionStatus
 from database.connector import *
+from fastApi.helper_function import *
 
 app = FastAPI()
 
@@ -24,10 +25,20 @@ session = connect_database()
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
+    comment_counter = 0
+    positive = 0
+    negative = 0
     try:
+
         while True:
             data = await websocket.receive_text()
-
+            comment_counter += 1
+            sentiment = score_calculate_emotion_coloring(data)
+            if sentiment == 1:
+                positive += 1
+            elif sentiment == -1:
+                negative += 1
+            difference = (positive - negative) / comment_counter if comment_counter != 0 else 0
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         logger.info("WebSocket disconnect")
