@@ -126,3 +126,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+notebooks/tiny_ready.rar
+notebooks/rubert_training_ipynb_.ipynb
+notebooks/prepared_troubles.csv
+notebooks/prepared_sryv.csv
