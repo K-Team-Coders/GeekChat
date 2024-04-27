@@ -59,7 +59,7 @@ async def check_activity_and_mood():
 
             for msg in room_data.get("messages", []):
                 if toxicityAnalisis(msg) == 1:
-                    await send_notification("Агрессивное поведение пользователей в комнате номер: {}".format(room_id))
+                    await send_notification("Агрессивное поведение пользователей в комнате номер:{}".format(room_id))
 
             positive_count = sum(
                 1 for msg in room_data.get("messages", []) if score_calculate_emotion_coloring(msg) == 1)

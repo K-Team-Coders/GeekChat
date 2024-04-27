@@ -1,11 +1,25 @@
-FROM python:3.10-alpine
+FROM python:3.11
 
-COPY ../telegramBot/requirements.txt .
+# set current directory for work
+# устанавливаем рабочий каталог
+WORKDIR ./
 
-RUN [ "pip", "install", "--upgrade", "pip"]
+# copy file requirements.txt to workdir
+# Копируем файл зависимостей в рабочую директорию внутри контейнера
+COPY ./pyproject.toml ./pyproject.toml
 
-RUN [ "pip", "install", "-r", "requirements.txt"]
+# Run pip and install requiremnts withous localy saved
+# Устанавливаем зависимости и не сохраняем их локально
+RUN pip install --no-cache-dir --upgrade poetry==1.4.2 \
+    && poetry config virtualenvs.create false \
+    && rm -rf $(poetry config cache-dir)/{cache,artifacts}
+
+# Copy project file to work directory
+# Копируем файлы для работы
 
 COPY . .
 
-EXPOSE 8082
+# Run
+# Запускаем проект
+
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "Application.main:app", "--bind", "0.0.0.0:8080"]
