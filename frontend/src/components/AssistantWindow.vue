@@ -1,6 +1,9 @@
 <template>
   <div class="flex w-full justify-center p-6 gap-4 duration-500 min-h-screen">
-    <div class="mx-56 w-full outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500">
+    <div class="fixed w-64 left-6">
+      <SidebarMain />
+    </div>
+    <div class="ml-72 w-4/6 outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500">
       <div class="h-full px-2">
 
         <div class="relative h-full flex justify-center">

@@ -1,13 +1,13 @@
 <template>
     <div class="bg-background w-full min-h-screen duration-500">
-      <AssistantWindow />
+      <ChatWindow />
     </div>
   </template>
   <script>
-  import AssistantWindow from "@/components/AssistantWindow.vue";
+  import ChatWindow from "@/components/ChatWindow.vue";
   
   export default {
-    components: { AssistantWindow },
+    components: { ChatWindow },
   };
   </script>
   <style></style>
