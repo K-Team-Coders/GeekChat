@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Float
 from sqlalchemy.orm import declarative_base
 from datetime import datetime
 
@@ -25,3 +25,17 @@ class Session(Base):
     session_id = Column(Integer)
     start_time = Column(DateTime, default=datetime.utcnow)
     end_time = Column(DateTime, default=datetime.utcnow)
+
+
+class UserInSession(Base):
+    __tablename__ = 'user_in_session'
+
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer)
+    user_name = Column(String, unique=True, index=True)
+    count_comment = Column(Integer, default=0)
+    positive_comments = Column(Integer, default=0)
+    negative_comments = Column(Integer, default=0)
+    activity = Column(Float, default=0.0)
+    last_activity_update = Column(Integer, default=int(datetime.now().timestamp()))
+

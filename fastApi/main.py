@@ -1,8 +1,8 @@
 from fastapi import FastAPI
-from fastApi.manager_connection import ConnectionManager
+from fastApi.manager_connection import SessionManager
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.websockets import WebSocketDisconnect, WebSocket
-from fastApi.pydantic_model import SessionStatus
+from fastApi.pydantic_model import SessionStatus, User
 from database.connector import *
 from fastApi.helper_function import *
 
@@ -18,30 +18,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-manager = ConnectionManager()
+manager = SessionManager()
 session = connect_database()
+loop = asyncio.get_event_loop()
+loop.create_task(manager.update_activity(session_id=1, interval=60, db=session))
 
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    comment_counter = 0
-    positive = 0
-    negative = 0
+@app.websocket("/ws/{session_id}")
+async def websocket_endpoint(websocket: WebSocket, session_id: int, user_name: str):
+    await manager.connect(websocket, session_id, user_name, db=session)
     try:
-
         while True:
             data = await websocket.receive_text()
-            comment_counter += 1
+            session_data = manager.sessions[session_id]
+            session_data["comments"] += 1
+            # Assume `score_calculate_emotion_coloring` is a placeholder function
             sentiment = score_calculate_emotion_coloring(data)
             if sentiment == 1:
-                positive += 1
+                session_data["positive"] += 1
             elif sentiment == -1:
-                negative += 1
-            difference = (positive - negative) / comment_counter if comment_counter != 0 else 0
+                session_data["negative"] += 1
+            user = session.query(UserInSession).filter_by(user_name=user_name).first()
+            if user:
+                user.count_comment += 1
+                if sentiment == 1:
+                    user.positive_comments += 1
+                elif sentiment == -1:
+                    user.negative_comments += 1
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
-        logger.info("WebSocket disconnect")
+        manager.disconnect(websocket, session_id, session)
 
 
 @app.post("/status")
