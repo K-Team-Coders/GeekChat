@@ -36,7 +36,7 @@ html = """<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebSocket Chat Test</title>
     <script>
-        let ws = new WebSocket("ws://localhost:8000/chat/1/user1");
+        let ws = new WebSocket("ws://localhost:8080/chat/1/user1");
 
         ws.onopen = function(event) {
             console.log("WebSocket connection established.");
