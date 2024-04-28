@@ -13,7 +13,7 @@ PORT = os.getenv('PORT')
 
 bot = telebot.TeleBot(TOKEN)
 
-logger.success('Telegram bot is started')
+logger.success('Telegram bot is started with credential host: {} and port: {}'.format(HOST, PORT))
 
 # Список для хранения ID всех активных чатов
 active_chats = set()
