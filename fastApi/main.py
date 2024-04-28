@@ -18,6 +18,7 @@ from notebooks.toxicity import toxicityAnalisis
 from notebooks.ban_words import containsBanWords
 from notebooks.troubles_tiny import get_prediction
 from dotenv import load_dotenv
+from notebooks.extract_all import *
 
 load_dotenv()
 HOST = os.getenv("HOST")
@@ -72,6 +73,7 @@ threshold_mood = 0
 class ThreshHold(BaseModel):
     activity: float
     mood: float
+    time_start: int
 
 
 async def check_activity_and_mood():
@@ -119,7 +121,7 @@ async def check_activity_and_mood():
                 if score_calculate_emotion_coloring(msg) == 1:
                     positive_count += 1
                     logger.debug(f"positive count: {positive_count}")
-                elif score_calculate_emotion_coloring(msg) == 1:
+                elif score_calculate_emotion_coloring(msg) == -1:
                     negative_count += 1
                     logger.debug(f"negative count: {negative_count}")
             # Проверка, чтобы избежать деления на ноль
@@ -141,7 +143,8 @@ async def check_activity_and_mood():
                 metrics_history[room_id] = {"activity": [], "mood": [], "errors": [], "ban_words": [],
                                             "aggressive_words": []}
 
-            rooms[room_id] = {"users": [], "messages": [], "activity": [], "mood": [], "errors": [], "ban_words": [], "aggressive_words": []}
+            rooms[room_id] = {"users": rooms.get(room_id, {}).get("users", []), "messages": rooms.get(room_id, {}).get("messages", []), "activity": [], "mood": [],
+                              "errors": [], "ban_words": [], "aggressive_words": []}
             rooms[room_id]["activity"].append(str(activity))
             rooms[room_id]["mood"].append(str(mood))
             rooms[room_id]["errors"].append(str(errors_count))
@@ -198,7 +201,8 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, token: str):
     logger.info(f"User {username} connected")
     # Создание новой комнаты, если она еще не существует
     if room_id not in rooms:
-        rooms[room_id] = {"users": [], "messages": [], "activity": 0, "mood": 0, "errors": 0, "ban_words": 0, "aggressive_words": 0}
+        rooms[room_id] = {"users": [], "messages": [], "activity": 0, "mood": 0, "errors": 0, "ban_words": 0,
+                          "aggressive_words": 0}
     if room_id not in room_websockets:
         room_websockets[room_id] = []
     room_websockets[room_id].append(websocket)
@@ -269,7 +273,7 @@ async def get_room_messages(room_id: str):
 @app.get("/rooms/{room_id}/activity")
 async def get_room_activity(room_id: str):
     # Получение активности комнаты
-    act = rooms.get(room_id, {}).get("activity",[0])
+    act = rooms.get(room_id, {}).get("activity", [0])
     # Если активность не найдена, возвращается список с одним элементом, равным 0
     logger.debug(act)
 
@@ -318,6 +322,7 @@ async def get_room_activity_history(room_id: str):
 
     return result
 
+
 @app.get("/rooms/{room_id}/mood/history")
 async def get_room_mood_history(room_id: str):
     # Получение истории настроения комнаты
@@ -332,6 +337,7 @@ async def get_room_mood_history(room_id: str):
 
     return result
 
+
 @app.get("/rooms/{room_id}/errors/history")
 async def get_room_errors_history(room_id: str):
     # Получение количества ошибок в сессии для комнаты
@@ -345,6 +351,7 @@ async def get_room_errors_history(room_id: str):
     }
 
     return result
+
 
 @app.get("/rooms/{room_id}/ban_words/history")
 async def get_room_ban_words_history(room_id: str):
@@ -374,6 +381,7 @@ async def get_room_aggressive_words_history(room_id: str):
     }
 
     return result
+
 
 if __name__ == '__main__':
     uvicorn.run("fastApi.main:app", host='0.0.0.0', port=8000)
