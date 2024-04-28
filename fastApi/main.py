@@ -18,7 +18,7 @@ from notebooks.toxicity import toxicityAnalisis
 from notebooks.ban_words import containsBanWords
 from notebooks.troubles_tiny import get_prediction
 from dotenv import load_dotenv
-from notebooks.extract_all import *
+from notebooks.extract_all import * 
 
 load_dotenv()
 HOST = os.getenv("HOST")
