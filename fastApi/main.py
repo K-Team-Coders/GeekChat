@@ -307,32 +307,73 @@ async def get_room_aggressive_words(room_id: str):
 @app.get("/rooms/{room_id}/activity/history")
 async def get_room_activity_history(room_id: str):
     # Получение истории активности комнаты
-    return metrics_history.get(room_id, {}).get("activity", [])
+    Y_data = metrics_history.get(room_id, {}).get("activity", [])
+    X_data = range(len(Y_data))
+    X_data = [str(float(x)) for x in X_data]
 
+    result = {
+        "labels": X_data,
+        "data": Y_data
+    }
+
+    return result
 
 @app.get("/rooms/{room_id}/mood/history")
 async def get_room_mood_history(room_id: str):
     # Получение истории настроения комнаты
-    return metrics_history.get(room_id, {}).get("mood", [])
+    Y_data = metrics_history.get(room_id, {}).get("mood", [])
+    X_data = range(len(Y_data))
+    X_data = [str(float(x)) for x in X_data]
 
+    result = {
+        "labels": X_data,
+        "data": Y_data
+    }
+
+    return result
 
 @app.get("/rooms/{room_id}/errors/history")
 async def get_room_errors_history(room_id: str):
     # Получение количества ошибок в сессии для комнаты
-    return metrics_history.get(room_id, {}).get("errors", [])
+    Y_data = metrics_history.get(room_id, {}).get("errors", [])
+    X_data = range(len(Y_data))
+    X_data = [str(float(x)) for x in X_data]
 
+    result = {
+        "labels": X_data,
+        "data": Y_data
+    }
+
+    return result
 
 @app.get("/rooms/{room_id}/ban_words/history")
 async def get_room_ban_words_history(room_id: str):
     # Получение количества нецензурных слов в сессии для комнаты
-    return metrics_history.get(room_id, {}).get("ban_words", [])
+    Y_data = metrics_history.get(room_id, {}).get("ban_words", [])
+    X_data = range(len(Y_data))
+    X_data = [str(float(x)) for x in X_data]
+
+    result = {
+        "labels": X_data,
+        "data": Y_data
+    }
+
+    return result
 
 
 @app.get("/rooms/{room_id}/aggressive_words/history")
 async def get_room_aggressive_words_history(room_id: str):
     # Получение количества агрессивных слов в сессии для комнаты
-    return metrics_history.get(room_id, {}).get("aggressive_words", [])
+    Y_data = metrics_history.get(room_id, {}).get("aggressive_words", [])
+    X_data = range(len(Y_data))
+    X_data = [str(float(x)) for x in X_data]
 
+    result = {
+        "labels": X_data,
+        "data": Y_data
+    }
+
+    return result
 
 if __name__ == '__main__':
     uvicorn.run("fastApi.main:app", host='0.0.0.0', port=8000)
