@@ -49,5 +49,3 @@ def extractFullTextData(text):
     }
 
     return common_result
-
-print(extractFullTextData("Вылетает трансляция бля"))
