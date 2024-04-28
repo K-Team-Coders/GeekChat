@@ -3,6 +3,7 @@ from toxicity import toxicityAnalisis
 from troubles_tiny import get_prediction
 from ban_words import containsBanWords
 
+
 def extractFullTextData(text):
     sentiment_res = get_sentiment(text)
     toxicity_res = toxicityAnalisis(text)
@@ -37,8 +38,6 @@ def extractFullTextData(text):
         sentiment_res = "Позитивное настроение"
     else:
         sentiment_res = "Нейтральное настроение"
-    
-    
 
     common_result = {
         "text": text,
@@ -49,5 +48,3 @@ def extractFullTextData(text):
     }
 
     return common_result
-
-print(extractFullTextData("Вылетает трансляция бля"))

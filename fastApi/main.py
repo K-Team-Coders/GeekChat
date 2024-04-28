@@ -18,6 +18,7 @@ from notebooks.toxicity import toxicityAnalisis
 from notebooks.ban_words import containsBanWords
 from notebooks.troubles_tiny import get_prediction
 from dotenv import load_dotenv
+from notebooks.extract_all import *
 
 load_dotenv()
 HOST = os.getenv("HOST")
@@ -50,13 +51,16 @@ room_messages: Dict[str, List[str]] = {}
 # Вместо записи в файл в функции save_messages(), добавьте сообщения в структуру данных
 async def save_messages():
     while True:
-        await asyncio.sleep(60)  # Подождать 60 секунд
+        await asyncio.sleep(20)  # Подождать 60 секунд
         current_time = datetime.now()
+        logger.debug(current_time)
         for room_id, room_data in rooms.items():
             messages = room_data.get("messages", [])
+            logger.debug(messages)
             # Сохранение сообщений с временной меткой в формате "час:минута:секунда"
             message_with_timestamp = [f"{current_time.strftime('%H:%M:%S')} - {msg}" for msg in messages]
             # Добавление сообщений в структуру данных
+            logger.debug(message_with_timestamp)
             if room_id not in room_messages:
                 room_messages[room_id] = []
             room_messages[room_id].extend(message_with_timestamp)
@@ -69,13 +73,14 @@ threshold_mood = 0
 class ThreshHold(BaseModel):
     activity: float
     mood: float
+    time_start: int
 
 
 async def check_activity_and_mood():
     while True:
-        await asyncio.sleep(60)  # Подождать 60 секунд
+        await asyncio.sleep(20)  # Подождать 60 секунд
         current_time = datetime.now()
-        logger.info(current_time)
+        logger.debug(current_time)
         for room_id, room_data in rooms.items():
             users_count = len(room_data.get("users", []))
             messages_count = len(room_data.get("messages", []))
@@ -83,23 +88,42 @@ async def check_activity_and_mood():
             toxicity = 0
             comment_contain_ban_words = 0
             technical_error = 0
+            positive_count = 0
+            negative_count = 0
             for msg in room_data.get("messages", []):
                 if toxicityAnalisis(msg) == 1:
-                    await send_notification("Агрессивное поведение пользователей в комнате номер: {}, содержание "
-                                            "сообщения: {}".format(room_id, msg))
+                    try:
+                        logger.debug("Message is toxicity")
+                        await send_notification("Агрессивное поведение пользователей в комнате номер: {}, содержание "
+                                                "сообщения: {}".format(room_id, msg))
+                        logger.success("Successfully send notification")
+                    except Exception as e:
+                        logger.error(str(e))
                     toxicity += 1
                 if containsBanWords(msg):
-                    await send_notification("Маты в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                    try:
+                        logger.debug("Message contain ban words")
+                        await send_notification(
+                            "Маты в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                        logger.success("Successfully send notification")
+                    except Exception as e:
+                        logger.error(str(e))
                     comment_contain_ban_words += 1
                 if get_prediction(msg) == 1:
-                    await send_notification(
-                        "Технические неполадки в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                    try:
+                        logger.debug("Message contain technical error")
+                        await send_notification(
+                            "Технические неполадки в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                        logger.success("Successfully send notification")
+                    except Exception as e:
+                        logger.error(str(e))
                     technical_error += 1
-
-            positive_count = sum(
-                1 for msg in room_data.get("messages", []) if score_calculate_emotion_coloring(msg) == 1)
-            negative_count = sum(
-                1 for msg in room_data.get("messages", []) if score_calculate_emotion_coloring(msg) == -1)
+                if score_calculate_emotion_coloring(msg) == 1:
+                    positive_count += 1
+                    logger.debug(f"positive count: {positive_count}")
+                elif score_calculate_emotion_coloring(msg) == -1:
+                    negative_count += 1
+                    logger.debug(f"negative count: {negative_count}")
             # Проверка, чтобы избежать деления на ноль
             if messages_count == 0:
                 activity = 0
@@ -113,10 +137,19 @@ async def check_activity_and_mood():
                 aggressive_words_count = toxicity / messages_count
                 activity = users_count / messages_count
                 mood = (positive_count - negative_count) / messages_count
+                logger.debug(f"{errors_count}, {ban_words_count}, {aggressive_words_count}, {activity}, {mood}")
             # Обновление метрик
             if room_id not in metrics_history:
                 metrics_history[room_id] = {"activity": [], "mood": [], "errors": [], "ban_words": [],
                                             "aggressive_words": []}
+
+            rooms[room_id] = {"users": rooms.get(room_id, {}).get("users", []), "messages": rooms.get(room_id, {}).get("messages", []), "activity": [], "mood": [],
+                              "errors": [], "ban_words": [], "aggressive_words": []}
+            rooms[room_id]["activity"].append(str(activity))
+            rooms[room_id]["mood"].append(str(mood))
+            rooms[room_id]["errors"].append(str(errors_count))
+            rooms[room_id]["ban_words"].append(str(ban_words_count))
+            rooms[room_id]["aggressive_words"].append(str(aggressive_words_count))
 
             metrics_history[room_id]["activity"].append(activity)
             metrics_history[room_id]["mood"].append(mood)
@@ -126,9 +159,21 @@ async def check_activity_and_mood():
 
             # Отправка уведомления, если активность или настроение ниже пороговых значений
             if activity < threshold_activity:
-                await send_notification("Низкая активность в комнате номер: {}".format(room_id))
+                try:
+                    await send_notification("Низкая активность в комнате номер: {}".format(room_id))
+                except Exception as e:
+                    logger.error(str(e))
             if mood < threshold_mood:
-                await send_notification("Негативный настрой в комнате номер: {}".format(room_id))
+                try:
+                    await send_notification("Негативный настрой в комнате номер: {}".format(room_id))
+                except Exception as e:
+                    logger.error(str(e))
+
+
+tasks = [
+    asyncio.create_task(save_messages()),
+    asyncio.create_task(check_activity_and_mood())
+]
 
 
 async def send_notification(message):
@@ -156,7 +201,8 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, token: str):
     logger.info(f"User {username} connected")
     # Создание новой комнаты, если она еще не существует
     if room_id not in rooms:
-        rooms[room_id] = {"users": [], "messages": [], "activity": 0, "mood": 0}
+        rooms[room_id] = {"users": [], "messages": [], "activity": 0, "mood": 0, "errors": 0, "ban_words": 0,
+                          "aggressive_words": 0}
     if room_id not in room_websockets:
         room_websockets[room_id] = []
     room_websockets[room_id].append(websocket)
@@ -185,8 +231,8 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, token: str):
     # Запускаем обработку сообщений в отдельном потоке
 
     await asyncio.gather(handle_messages())
-    await asyncio.gather(save_messages())
-    await asyncio.gather(check_activity_and_mood())
+    # Запускаем цикл событий asyncio для выполнения задач параллельно
+    asyncio.run(asyncio.wait(tasks))
 
 
 @app.post("/threshold")
@@ -194,7 +240,7 @@ async def threshold(threshold: ThreshHold):
     global threshold_mood
     global threshold_activity
     threshold_mood = threshold.mood
-    threshold_activity = threshold_activity
+    threshold_activity = threshold.activity
 
 
 @app.get("/register")
@@ -227,61 +273,114 @@ async def get_room_messages(room_id: str):
 @app.get("/rooms/{room_id}/activity")
 async def get_room_activity(room_id: str):
     # Получение активности комнаты
-    return rooms.get(room_id, {}).get("activity", 0)
+    act = rooms.get(room_id, {}).get("activity", [0])
+    # Если активность не найдена, возвращается список с одним элементом, равным 0
+    logger.debug(act)
+
+    return act
 
 
 @app.get("/rooms/{room_id}/mood")
 async def get_room_mood(room_id: str):
     # Получение настроения комнаты
-    return rooms.get(room_id, {}).get("mood", 0)
+    mood = rooms.get(room_id, {}).get("mood", 0)
+    return mood
 
 
 @app.get("/rooms/{room_id}/ban_words")
 async def get_room_ban_words(room_id: str):
     # Получение информации о наличии нецензурной лексики в комнате
-    return rooms.get(room_id, {}).get("ban_words", 0)
+    ban = rooms.get(room_id, {}).get("ban_words", 0)
+    return ban
 
 
 @app.get("/rooms/{room_id}/errors")
 async def get_room_errors(room_id: str):
     # Получение технических ошибок в комнате
-    return rooms.get(room_id, {}).get("errors", 0)
+    err = rooms.get(room_id, {}).get("errors", 0)
+    return err
 
 
 @app.get("/rooms/{room_id}/aggressive_words/")
 async def get_room_aggressive_words(room_id: str):
     # Получение информации о наличии агрессивных слов в комнате
-    return rooms.get(room_id, {}).get("aggressive_words", 0)
+    agr = rooms.get(room_id, {}).get("aggressive_words", 0)
+    return agr
 
 
 @app.get("/rooms/{room_id}/activity/history")
 async def get_room_activity_history(room_id: str):
     # Получение истории активности комнаты
-    return metrics_history.get(room_id, {}).get("activity", [])
+    Y_data = metrics_history.get(room_id, {}).get("activity", [])
+    X_data = range(len(Y_data))
+    X_data = [str(float(x)) for x in X_data]
+
+    result = {
+        "labels": X_data,
+        "data": Y_data
+    }
+
+    return result
 
 
 @app.get("/rooms/{room_id}/mood/history")
 async def get_room_mood_history(room_id: str):
     # Получение истории настроения комнаты
-    return metrics_history.get(room_id, {}).get("mood", [])
+    Y_data = metrics_history.get(room_id, {}).get("mood", [])
+    X_data = range(len(Y_data))
+    X_data = [str(float(x)) for x in X_data]
+
+    result = {
+        "labels": X_data,
+        "data": Y_data
+    }
+
+    return result
 
 
 @app.get("/rooms/{room_id}/errors/history")
 async def get_room_errors_history(room_id: str):
     # Получение количества ошибок в сессии для комнаты
-    return metrics_history.get(room_id, {}).get("errors", [])
+    Y_data = metrics_history.get(room_id, {}).get("errors", [])
+    X_data = range(len(Y_data))
+    X_data = [str(float(x)) for x in X_data]
+
+    result = {
+        "labels": X_data,
+        "data": Y_data
+    }
+
+    return result
 
 
 @app.get("/rooms/{room_id}/ban_words/history")
 async def get_room_ban_words_history(room_id: str):
     # Получение количества нецензурных слов в сессии для комнаты
-    return metrics_history.get(room_id, {}).get("ban_words", [])
+    Y_data = metrics_history.get(room_id, {}).get("ban_words", [])
+    X_data = range(len(Y_data))
+    X_data = [str(float(x)) for x in X_data]
+
+    result = {
+        "labels": X_data,
+        "data": Y_data
+    }
+
+    return result
 
 
 @app.get("/rooms/{room_id}/aggressive_words/history")
 async def get_room_aggressive_words_history(room_id: str):
     # Получение количества агрессивных слов в сессии для комнаты
-    return metrics_history.get(room_id, {}).get("aggressive_words", [])
+    Y_data = metrics_history.get(room_id, {}).get("aggressive_words", [])
+    X_data = range(len(Y_data))
+    X_data = [str(float(x)) for x in X_data]
+
+    result = {
+        "labels": X_data,
+        "data": Y_data
+    }
+
+    return result
 
 
 if __name__ == '__main__':
