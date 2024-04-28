@@ -219,19 +219,19 @@ async def get_room_mood(room_id: str):
 
 @app.get("/rooms/{room_id}/ban_words")
 async def get_room_mood(room_id: str):
-    # Получение настроения комнаты
+    # Получение информации о наличии нецензурной лексики в комнате
     return rooms.get(room_id, {}).get("ban_words", 0)
 
 
 @app.get("/rooms/{room_id}/errors")
 async def get_room_mood(room_id: str):
-    # Получение настроения комнаты
+    # Получение технических ошибок в комнате
     return rooms.get(room_id, {}).get("errors", 0)
 
 
 @app.get("/rooms/{room_id}/aggressive_words/")
 async def get_room_mood(room_id: str):
-    # Получение настроения комнаты
+    # Получение информации о наличии агрессивных слов в комнате
     return rooms.get(room_id, {}).get("mood", 0)
 
 
