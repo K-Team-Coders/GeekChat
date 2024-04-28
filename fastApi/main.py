@@ -35,7 +35,7 @@ app.add_middleware(
 )
 
 # Структура данных для хранения комнат, пользователей и сообщений
-rooms: Dict[str, Dict[str, List[str]]] = {}
+rooms: Dict[str, Dict[str, float]] = {}
 
 room_websockets: Dict[str, List[WebSocket]] = {}
 # Структура данных для хранения ретроспективных данных
@@ -50,13 +50,16 @@ room_messages: Dict[str, List[str]] = {}
 # Вместо записи в файл в функции save_messages(), добавьте сообщения в структуру данных
 async def save_messages():
     while True:
-        await asyncio.sleep(60)  # Подождать 60 секунд
+        await asyncio.sleep(20)  # Подождать 60 секунд
         current_time = datetime.now()
+        logger.debug(current_time)
         for room_id, room_data in rooms.items():
             messages = room_data.get("messages", [])
+            logger.debug(messages)
             # Сохранение сообщений с временной меткой в формате "час:минута:секунда"
             message_with_timestamp = [f"{current_time.strftime('%H:%M:%S')} - {msg}" for msg in messages]
             # Добавление сообщений в структуру данных
+            logger.debug(message_with_timestamp)
             if room_id not in room_messages:
                 room_messages[room_id] = []
             room_messages[room_id].extend(message_with_timestamp)
@@ -73,9 +76,9 @@ class ThreshHold(BaseModel):
 
 async def check_activity_and_mood():
     while True:
-        await asyncio.sleep(60)  # Подождать 60 секунд
+        await asyncio.sleep(20)  # Подождать 60 секунд
         current_time = datetime.now()
-        logger.info(current_time)
+        logger.debug(current_time)
         for room_id, room_data in rooms.items():
             users_count = len(room_data.get("users", []))
             messages_count = len(room_data.get("messages", []))
@@ -83,23 +86,42 @@ async def check_activity_and_mood():
             toxicity = 0
             comment_contain_ban_words = 0
             technical_error = 0
+            positive_count = 0
+            negative_count = 0
             for msg in room_data.get("messages", []):
                 if toxicityAnalisis(msg) == 1:
-                    await send_notification("Агрессивное поведение пользователей в комнате номер: {}, содержание "
-                                            "сообщения: {}".format(room_id, msg))
+                    try:
+                        logger.debug("Message is toxicity")
+                        await send_notification("Агрессивное поведение пользователей в комнате номер: {}, содержание "
+                                                "сообщения: {}".format(room_id, msg))
+                        logger.success("Successfully send notification")
+                    except Exception as e:
+                        logger.error(str(e))
                     toxicity += 1
                 if containsBanWords(msg):
-                    await send_notification("Маты в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                    try:
+                        logger.debug("Message contain ban words")
+                        await send_notification(
+                            "Маты в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                        logger.success("Successfully send notification")
+                    except Exception as e:
+                        logger.error(str(e))
                     comment_contain_ban_words += 1
                 if get_prediction(msg) == 1:
-                    await send_notification(
-                        "Технические неполадки в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                    try:
+                        logger.debug("Message contain technical error")
+                        await send_notification(
+                            "Технические неполадки в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                        logger.success("Successfully send notification")
+                    except Exception as e:
+                        logger.error(str(e))
                     technical_error += 1
-
-            positive_count = sum(
-                1 for msg in room_data.get("messages", []) if score_calculate_emotion_coloring(msg) == 1)
-            negative_count = sum(
-                1 for msg in room_data.get("messages", []) if score_calculate_emotion_coloring(msg) == -1)
+                if score_calculate_emotion_coloring(msg) == 1:
+                    positive_count += 1
+                    logger.debug(f"positive count: {positive_count}")
+                elif score_calculate_emotion_coloring(msg) == 1:
+                    negative_count += 1
+                    logger.debug(f"negative count: {negative_count}")
             # Проверка, чтобы избежать деления на ноль
             if messages_count == 0:
                 activity = 0
@@ -113,10 +135,15 @@ async def check_activity_and_mood():
                 aggressive_words_count = toxicity / messages_count
                 activity = users_count / messages_count
                 mood = (positive_count - negative_count) / messages_count
+                logger.debug(f"{errors_count}, {ban_words_count}, {aggressive_words_count}, {activity}, {mood}")
             # Обновление метрик
             if room_id not in metrics_history:
                 metrics_history[room_id] = {"activity": [], "mood": [], "errors": [], "ban_words": [],
                                             "aggressive_words": []}
+
+            rooms[room_id] = {"activity": float(activity), "mood": float(mood), "errors": float(errors_count),
+                              "ban_words": float(ban_words_count),
+                              "aggressive_words": float(aggressive_words_count)}
 
             metrics_history[room_id]["activity"].append(activity)
             metrics_history[room_id]["mood"].append(mood)
@@ -126,9 +153,21 @@ async def check_activity_and_mood():
 
             # Отправка уведомления, если активность или настроение ниже пороговых значений
             if activity < threshold_activity:
-                await send_notification("Низкая активность в комнате номер: {}".format(room_id))
+                try:
+                    await send_notification("Низкая активность в комнате номер: {}".format(room_id))
+                except Exception as e:
+                    logger.error(str(e))
             if mood < threshold_mood:
-                await send_notification("Негативный настрой в комнате номер: {}".format(room_id))
+                try:
+                    await send_notification("Негативный настрой в комнате номер: {}".format(room_id))
+                except Exception as e:
+                    logger.error(str(e))
+
+
+tasks = [
+    asyncio.create_task(save_messages()),
+    asyncio.create_task(check_activity_and_mood())
+]
 
 
 async def send_notification(message):
@@ -185,8 +224,8 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, token: str):
     # Запускаем обработку сообщений в отдельном потоке
 
     await asyncio.gather(handle_messages())
-    await asyncio.gather(save_messages())
-    await asyncio.gather(check_activity_and_mood())
+    # Запускаем цикл событий asyncio для выполнения задач параллельно
+    asyncio.run(asyncio.wait(tasks))
 
 
 @app.post("/threshold")
@@ -194,7 +233,7 @@ async def threshold(threshold: ThreshHold):
     global threshold_mood
     global threshold_activity
     threshold_mood = threshold.mood
-    threshold_activity = threshold_activity
+    threshold_activity = threshold.activity
 
 
 @app.get("/register")
