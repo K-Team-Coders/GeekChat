@@ -1,5 +1,9 @@
 <template>
-  <Bar :chart-data="chartData" :chart-options="chartOptions" />
+  <div class="text-center">
+    <Bar :chart-data="chartData" :chart-options="chartOptions" />
+    {{ description }}
+  </div>
+  
 </template>
 
 <script>
@@ -10,27 +14,12 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 export default {
   props: {
-    dataset: Object
+    dataset: Object,
+    description: String
   },
   name: 'BarChart',
   components: { Bar },
-  mounted() {
-    console.log(this.dataset)
-    let name_set = []
-    let pos_set = []
-    let neu_set = []
-    let neg_set = []
-    this.dataset.forEach(element => {
-    name_set.push(element.cluster_name),
-    pos_set.push( element.numPositive),
-    neu_set.push( element.numNeutral),
-    neg_set.push( element.numNegative)
-    });
-    this.chartData.labels = name_set
-    this.chartData.datasets[0].data = pos_set
-    this.chartData.datasets[1].data = neu_set
-    this.chartData.datasets[2].data = neg_set
-  },
+ 
   data() {
     return {
       name_set: [],
