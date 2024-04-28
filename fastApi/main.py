@@ -9,6 +9,7 @@ import uvicorn
 from fastapi import FastAPI, WebSocket, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from fastapi.responses import JSONResponse
 from fastApi.helper_funcion import *
 from notebooks.toxicity import toxicityAnalisis
 from notebooks.ban_words import containsBanWords
@@ -211,6 +212,24 @@ async def get_room_mood(room_id: str):
     return rooms.get(room_id, {}).get("mood", 0)
 
 
+@app.get("/rooms/{room_id}/ban_words")
+async def get_room_mood(room_id: str):
+    # Получение настроения комнаты
+    return rooms.get(room_id, {}).get("ban_words", 0)
+
+
+@app.get("/rooms/{room_id}/errors")
+async def get_room_mood(room_id: str):
+    # Получение настроения комнаты
+    return rooms.get(room_id, {}).get("errors", 0)
+
+
+@app.get("/rooms/{room_id}/aggressive_words/")
+async def get_room_mood(room_id: str):
+    # Получение настроения комнаты
+    return rooms.get(room_id, {}).get("mood", 0)
+
+
 @app.get("/rooms/{room_id}/activity/history")
 async def get_room_activity_history(room_id: str):
     # Получение истории активности комнаты
@@ -221,6 +240,24 @@ async def get_room_activity_history(room_id: str):
 async def get_room_mood_history(room_id: str):
     # Получение истории настроения комнаты
     return metrics_history.get(room_id, {}).get("mood", [])
+
+
+@app.get("/rooms/{room_id}/errors/history")
+async def get_room_errors(room_id: str):
+    # Получение количества ошибок в сессии для комнаты
+    return JSONResponse(content={"errors": metrics_history.get(room_id, {}).get("errors", [])})
+
+
+@app.get("/rooms/{room_id}/ban_words/history")
+async def get_room_ban_words(room_id: str):
+    # Получение количества нецензурных слов в сессии для комнаты
+    return JSONResponse(content={"ban_words": metrics_history.get(room_id, {}).get("ban_words", [])})
+
+
+@app.get("/rooms/{room_id}/aggressive_words/history")
+async def get_room_aggressive_words(room_id: str):
+    # Получение количества агрессивных слов в сессии для комнаты
+    return JSONResponse(content={"aggressive_words": metrics_history.get(room_id, {}).get("aggressive_words", [])})
 
 
 if __name__ == '__main__':
