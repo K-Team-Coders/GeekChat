@@ -1,6 +1,6 @@
 from pathlib import Path
 
-ban_words_txt_path = Path().cwd().joinpath("censor.txt")
+ban_words_txt_path = Path().cwd().joinpath("./notebooks/censor.txt")
 
 words = ""
 with open(ban_words_txt_path, "r", encoding="utf-8") as f:
