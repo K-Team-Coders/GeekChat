@@ -198,7 +198,7 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, token: str):
     logger.info(f"User {username} connected")
     # Создание новой комнаты, если она еще не существует
     if room_id not in rooms:
-        rooms[room_id] = {"users": [], "messages": [], "activity": 0, "mood": 0}
+        rooms[room_id] = {"users": [], "messages": [], "activity": 0, "mood": 0, "errors": 0, "ban_words": 0, "aggressive_words": 0}
     if room_id not in room_websockets:
         room_websockets[room_id] = []
     room_websockets[room_id].append(websocket)
@@ -272,36 +272,36 @@ async def get_room_activity(room_id: str):
     act = rooms.get(room_id, {}).get("activity",[0])
     # Если активность не найдена, возвращается список с одним элементом, равным 0
     logger.debug(act)
-    act_float = list(map(float, act))  # Преобразование каждого элемента списка в число с плавающей точкой
-    return act_float
+
+    return act
 
 
 @app.get("/rooms/{room_id}/mood")
 async def get_room_mood(room_id: str):
     # Получение настроения комнаты
     mood = rooms.get(room_id, {}).get("mood", 0)
-    return float(mood)
+    return mood
 
 
 @app.get("/rooms/{room_id}/ban_words")
 async def get_room_ban_words(room_id: str):
     # Получение информации о наличии нецензурной лексики в комнате
     ban = rooms.get(room_id, {}).get("ban_words", 0)
-    return float(ban)
+    return ban
 
 
 @app.get("/rooms/{room_id}/errors")
 async def get_room_errors(room_id: str):
     # Получение технических ошибок в комнате
     err = rooms.get(room_id, {}).get("errors", 0)
-    return float(err)
+    return err
 
 
 @app.get("/rooms/{room_id}/aggressive_words/")
 async def get_room_aggressive_words(room_id: str):
     # Получение информации о наличии агрессивных слов в комнате
     agr = rooms.get(room_id, {}).get("aggressive_words", 0)
-    return float(agr)
+    return agr
 
 
 @app.get("/rooms/{room_id}/activity/history")
