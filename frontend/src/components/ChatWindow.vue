@@ -39,7 +39,7 @@
 
           </div>
           <div class="absolute bottom-3 w-full flex items-center gap-2 justify-center px-2">
-            <input v-model="message"
+            <input v-model="message" @keydown.enter="sendMessage()"
               class="w-11/12 rounded-xl h-10 border-[1.5px] bg-transparent px-4 text-activeText placeholder:text-unactiveText border-neutral-500 dark:border-neutral-200 duration-500"
               type="text" placeholder="Спрашивайте все, что угодно..." />
 

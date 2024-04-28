@@ -20,7 +20,7 @@
                 </div>
                 <div class=" w-full px-2 uppercase text-activeText bg-purple-500 py-3 font-monster font-bold bg- mt-4 text-center text-md">
                     Токсичные слова/мин.: 
-                    <p>{{getagressive[0]}}</p>
+                    <p>{{getagressive}}</p>
                 </div>
                 <div class=" w-full px-2 uppercase text-activeText bg-indigo-500 py-3 font-monster font-bold bg- mt-4 text-center text-md">
                     Тех. неполадки/мин.: 
@@ -93,11 +93,11 @@
                 
             </div>
             <div class="w-full grid grid-cols-5 gap-4 mt-3">
-                <LineChartVue :color="'orange'" :label="'Активность'"/>
-                <LineChartVue :color="'green'" :label="'Настроение'"/>
-                <LineChartVue :color="'red'" :label="'Токсичность'"/>
-                <LineChartVue :color="'blue'" :label="'Тех. неполадки'"/>
-                <LineChartVue :color="'purple'" :label="'Запрещенные слова'"/>
+                <LineChartVue :datasets="activity_history" :color="'orange'" :label="'Активность'"/>
+                <LineChartVue :datasets="mood_history" :color="'green'" :label="'Настроение'"/>
+                <LineChartVue :datasets="aggresice_words_history" :color="'red'" :label="'Токсичность'"/>
+                <LineChartVue :datasets="activity_history" :color="'blue'" :label="'Тех. неполадки'"/>
+                <LineChartVue :datasets="ban_words_history" :color="'purple'" :label="'Запрещенные слова'"/>
             </div>
 
 
@@ -128,11 +128,11 @@ export default {
             isReady: false,
             connection_data: null,
             current_users: [],
-            activity: [0],
-            mood: [0],
-            ban_words: [0],
-            errors: [0],
-            aggresice_words: [0],
+            activity: 0,
+            mood: 0,
+            ban_words: 0,
+            errors: 0,
+            aggresice_words: 0,
             activity_history: 0,
             mood_history: 0,
             ban_words_history: 0,
@@ -232,28 +232,28 @@ export default {
             .then((response) => {
                 console.log('Активность (история) получена:');
                 console.log(response.data);
-                this.activity = response.data.activity;
+                this.activity_history = response.data;
             })
 
             await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/mood/history`)
             .then((response) => {
                 console.log('Настроение (история) получено:');
                 console.log(response.data);
-                this.mood_history = response.data.mood;
+                this.mood_history = response.data;
             })
 
             await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/ban_words/history`)
             .then((response) => {
                 console.log('запрещенные слова (история) получено:');
                 console.log(response.data);
-                this.ban_words_history = response.data.ban_words;
+                this.ban_words_history = response.data;
             })
 
             await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/errors/history`)
             .then((response) => {
                 console.log('ошибки (история) получено:');
                 console.log(response.data);
-                this.errors_history = response.data.ban_words;
+                this.errors_history = response.data;
             })
 
             
@@ -262,7 +262,7 @@ export default {
             .then((response) => {
                 console.log('агрессия (история) получено:');
                 console.log(response.data);
-                this.aggresice_words_history = response.data.errors;
+                this.aggresice_words_history = response.data;
             })
 
 
@@ -301,6 +301,32 @@ export default {
         getagressive(){
             return this.aggresice_words
         }, 
+
+        getusers(){
+            return this.current_users
+        },
+
+        getactivityhis(){
+            return this.activity_history
+        },
+
+        getmoodhis(){
+            return this.mood_history
+        },
+
+        getbanwordshis(){
+            return this.ban_words_history
+        },
+
+        geterrorshis(){
+            return this.errors_history
+        },
+
+        getagressivehis(){
+            return this.aggresice_words_history
+        }, 
+
+
         spliceMessages() {
             let messages = this.messages;
             messages.forEach((message) => {
