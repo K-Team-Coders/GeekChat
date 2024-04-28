@@ -269,31 +269,39 @@ async def get_room_messages(room_id: str):
 @app.get("/rooms/{room_id}/activity")
 async def get_room_activity(room_id: str):
     # Получение активности комнаты
-    return rooms.get(room_id, {}).get("activity", 0)
+    act = rooms.get(room_id, {}).get("activity",[0])
+    # Если активность не найдена, возвращается список с одним элементом, равным 0
+    logger.debug(act)
+    act_float = list(map(float, act))  # Преобразование каждого элемента списка в число с плавающей точкой
+    return act_float
 
 
 @app.get("/rooms/{room_id}/mood")
 async def get_room_mood(room_id: str):
     # Получение настроения комнаты
-    return rooms.get(room_id, {}).get("mood", 0)
+    mood = rooms.get(room_id, {}).get("mood", 0)
+    return float(mood)
 
 
 @app.get("/rooms/{room_id}/ban_words")
 async def get_room_ban_words(room_id: str):
     # Получение информации о наличии нецензурной лексики в комнате
-    return rooms.get(room_id, {}).get("ban_words", 0)
+    ban = rooms.get(room_id, {}).get("ban_words", 0)
+    return float(ban)
 
 
 @app.get("/rooms/{room_id}/errors")
 async def get_room_errors(room_id: str):
     # Получение технических ошибок в комнате
-    return rooms.get(room_id, {}).get("errors", 0)
+    err = rooms.get(room_id, {}).get("errors", 0)
+    return float(err)
 
 
 @app.get("/rooms/{room_id}/aggressive_words/")
 async def get_room_aggressive_words(room_id: str):
     # Получение информации о наличии агрессивных слов в комнате
-    return rooms.get(room_id, {}).get("aggressive_words", 0)
+    agr = rooms.get(room_id, {}).get("aggressive_words", 0)
+    return float(agr)
 
 
 @app.get("/rooms/{room_id}/activity/history")
