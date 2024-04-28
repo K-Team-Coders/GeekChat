@@ -35,7 +35,7 @@ app.add_middleware(
 )
 
 # Структура данных для хранения комнат, пользователей и сообщений
-rooms: Dict[str, Dict[str, float]] = {}
+rooms: Dict[str, Dict[str, List[str]]] = {}
 
 room_websockets: Dict[str, List[WebSocket]] = {}
 # Структура данных для хранения ретроспективных данных
@@ -141,9 +141,12 @@ async def check_activity_and_mood():
                 metrics_history[room_id] = {"activity": [], "mood": [], "errors": [], "ban_words": [],
                                             "aggressive_words": []}
 
-            rooms[room_id] = {"activity": float(activity), "mood": float(mood), "errors": float(errors_count),
-                              "ban_words": float(ban_words_count),
-                              "aggressive_words": float(aggressive_words_count)}
+            rooms[room_id] = {"activity": [], "mood": [], "errors": [], "ban_words": [], "aggressive_words": []}
+            rooms[room_id]["activity"].append(str(activity))
+            rooms[room_id]["mood"].append(str(mood))
+            rooms[room_id]["errors"].append(str(errors_count))
+            rooms[room_id]["ban_words"].append(str(ban_words_count))
+            rooms[room_id]["aggressive_words"].append(str(aggressive_words_count))
 
             metrics_history[room_id]["activity"].append(activity)
             metrics_history[room_id]["mood"].append(mood)
