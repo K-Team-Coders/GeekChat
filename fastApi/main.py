@@ -7,18 +7,14 @@ from datetime import datetime
 from typing import Dict, List
 
 import uvicorn
+from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from fastApi.helper_funcion import *
-from notebooks.toxicity import toxicityAnalisis
-from notebooks.ban_words import containsBanWords
-from notebooks.troubles_tiny import get_prediction
-from dotenv import load_dotenv
-from notebooks.extract_all import * 
+from notebooks.extract_all import *
 
 load_dotenv()
 HOST = os.getenv("HOST")
@@ -180,8 +176,10 @@ async def send_notification(message):
     # Отправка сообщения через сокет
     try:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        logger.debug(client_socket)
         client_socket.connect((HOST, PORT))  # Пример адреса и порта сервера
         data = json.dumps({'message': message})
+        logger.debug(data)
         client_socket.send(data.encode('utf-8'))
         client_socket.close()
     except Exception as e:

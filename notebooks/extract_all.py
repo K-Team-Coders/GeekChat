@@ -1,7 +1,7 @@
-from sentiment import get_sentiment
-from toxicity import toxicityAnalisis
-from troubles_tiny import get_prediction
-from ban_words import containsBanWords
+from notebooks.sentiment import get_sentiment
+from notebooks.toxicity import toxicityAnalisis
+from notebooks.troubles_tiny import get_prediction
+from notebooks.ban_words import containsBanWords
 
 
 def extractFullTextData(text):
