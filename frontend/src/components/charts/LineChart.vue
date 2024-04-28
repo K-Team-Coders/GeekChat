@@ -61,26 +61,21 @@
         default: () => []
       },
       label: String,
-      datasets: Array,
+     datasets: {type: Object,
+              default: {labels: [0]}, data: [0]},
       color: String,
     },
     computed: {
       getData(){
         let chart = {
-          labels: [
-            '00:00 ',
-            '01:00 ',
-            '02:02 ',
-            '03:02 ',
-            '04:02 ',
-            '05:02 ',
-            '06:02 '
-          ],
+          labels: this.datasets.labels,
           datasets: [
             {
               label: this.label,
               backgroundColor: this.color,
-              data: [1, 30, 25, 10, 7, 3, 0]
+              data: this.datasets.data,
+              tension: 0.3,
+              fill: "gray"
             }
           ]
         }
