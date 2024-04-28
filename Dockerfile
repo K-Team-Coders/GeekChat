@@ -23,4 +23,4 @@ COPY database .
 # Run
 # Запускаем проект
 
-CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "fastApi.main:app", "--bind", "0.0.0.0:8080"]
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "fastApi.main:app", "--bind", "0.0.0.0:8081"]

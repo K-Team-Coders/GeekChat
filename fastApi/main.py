@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import socket
 import uuid
 from datetime import datetime
@@ -14,7 +15,11 @@ from fastApi.helper_funcion import *
 from notebooks.toxicity import toxicityAnalisis
 from notebooks.ban_words import containsBanWords
 from notebooks.troubles_tiny import get_prediction
+from dotenv import load_dotenv
 
+load_dotenv()
+HOST = os.getenv("HOST")
+PORT = os.getenv("PORT")
 app = FastAPI()
 
 origins = ["*"]
@@ -119,7 +124,7 @@ async def send_notification(message):
     # Отправка сообщения через сокет
     try:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(('localhost', 12345))  # Пример адреса и порта сервера
+        client_socket.connect((HOST, PORT))  # Пример адреса и порта сервера
         data = json.dumps({'message': message})
         client_socket.send(data.encode('utf-8'))
         client_socket.close()
