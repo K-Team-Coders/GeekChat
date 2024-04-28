@@ -26,6 +26,13 @@ const routes = [
     component: () => import("../views/SessionChat.vue"),
     props: true,
   },
+
+  {
+    path: "/admin_session",
+    name: "admin_session",
+    component: () => import("../components/OneSessionWindow.vue"),
+    props: true,
+  },
 ];
 
 const router = createRouter({

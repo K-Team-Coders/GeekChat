@@ -4,10 +4,22 @@
       <SidebarMain />
     </div>
     <div
-      class="ml-72 w-4/6 outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500">
-      <div class="h-full px-2">
-
+      class="ml-72 w-5/6 outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500">
+      <div class=" w-full px-2 uppercase text-activeText font-rale font-bold  mt-4 text-center text-4xl">
+        Список сессий
       </div>
+
+      <router-link to="/chat">
+      <div class="px-2 uppercase text-activeText font-rale font-bold  mt-4  mx-48 rounded-lg">
+        <div class="flex flex-row dark:bg-slate-500 bg-slate-200 dark:hover:bg-slate-700 hover:bg-slate-500 duration-300">
+          <div class="p-4 w-full">
+            <p class="text-2xl text-start">1. Сессия № 1</p>
+          </div> 
+          <button class="hover:cursor-pointer hover:bg-indigo-700 duration-300 w-full ml-96 text-center bg-indigo-400 font-rale">Перейти</button>
+        </div>
+      </div>
+    </router-link>
+    
     </div>
   </div>
 </template>
