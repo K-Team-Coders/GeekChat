@@ -9,8 +9,21 @@ with open(ban_words_txt_path, "r", encoding="utf-8") as f:
 words = words.split("\n")
 
 
-def containsBanWords(text):
-    if text in words:
-        return 1
+def containsBanWords(text, return_what = False):
+    clean = True
+    bad_word = ""
+    for word in text.split():
+        if word in words:
+            clean = False
+            bad_word = word
+
+    if clean:
+        if return_what:
+            return 0, None
+        else:
+            return 0
     else:
-        return 0
+        if return_what:
+            return 1, bad_word
+        else:
+            return 1
