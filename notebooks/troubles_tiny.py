@@ -9,10 +9,10 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # model_path = Path.cwd().joinpath("tiny_ready")
 
 tokenizer = BertTokenizerFast.from_pretrained(
-    # Путь до папки с tiny_ready
+    "notebooks/tiny_ready",
 )
 model = BertForSequenceClassification.from_pretrained(
-    # путь до папки с tiny_ready
+    "notebooks/tiny_ready",
     num_labels=2
 ).to(device)
 

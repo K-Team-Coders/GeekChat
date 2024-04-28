@@ -9,10 +9,11 @@ import uvicorn
 from fastapi import FastAPI, WebSocket, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from helper_funcion import *
+from fastApi.helper_funcion import *
 from notebooks.toxicity import toxicityAnalisis
 from notebooks.ban_words import containsBanWords
 from notebooks.troubles_tiny import get_prediction
+
 app = FastAPI()
 
 origins = ["*"]
@@ -27,13 +28,18 @@ app.add_middleware(
 
 # Структура данных для хранения комнат, пользователей и сообщений
 rooms: Dict[str, Dict[str, List[str]]] = {}
-metrics_history: Dict[str, Dict[str, List[float]]] = {}
-room_websockets: Dict[str, List[WebSocket]] = {}
 
+room_websockets: Dict[str, List[WebSocket]] = {}
+# Структура данных для хранения ретроспективных данных
+metrics_history: Dict[str, Dict[str, List[float]]] = {}
 # Структура данных для хранения пользователей и их токенов
 users: Dict[str, str] = {}
 
+# Структура данных для хранения сообщений в комнатах
+room_messages: Dict[str, List[str]] = {}
 
+
+# Вместо записи в файл в функции save_messages(), добавьте сообщения в структуру данных
 async def save_messages():
     while True:
         await asyncio.sleep(60)  # Подождать 60 секунд
@@ -42,8 +48,10 @@ async def save_messages():
             messages = room_data.get("messages", [])
             # Сохранение сообщений с временной меткой в формате "час:минута:секунда"
             message_with_timestamp = [f"{current_time.strftime('%H:%M:%S')} - {msg}" for msg in messages]
-            with open(f"messages_{room_id}.txt", "a") as file:
-                file.write("\n".join(message_with_timestamp) + "\n")
+            # Добавление сообщений в структуру данных
+            if room_id not in room_messages:
+                room_messages[room_id] = []
+            room_messages[room_id].extend(message_with_timestamp)
 
 
 threshold_activity = 0
@@ -57,14 +65,22 @@ async def check_activity_and_mood():
         for room_id, room_data in rooms.items():
             users_count = len(room_data.get("users", []))
             messages_count = len(room_data.get("messages", []))
-
+            toxicity = 0
+            comment_contain_ban_words = 0
+            technical_error = 0
             for msg in room_data.get("messages", []):
-                if toxicityAnalisis(msg) == 1 or :
-                    await send_notification("Агрессивное поведение пользователей в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                if toxicityAnalisis(msg) == 1:
+                    await send_notification("Агрессивное поведение пользователей в комнате номер: {}, содержание "
+                                            "сообщения: {}".format(room_id, msg))
+                    toxicity += 1
                 if containsBanWords(msg):
                     await send_notification("Маты в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                    comment_contain_ban_words += 1
                 if get_prediction(msg) == 1:
-                    await send_notification("Технические неполадки в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                    await send_notification(
+                        "Технические неполадки в комнате номер: {}, содержание сообщения: {}".format(room_id, msg))
+                    technical_error += 1
+
             positive_count = sum(
                 1 for msg in room_data.get("messages", []) if score_calculate_emotion_coloring(msg) == 1)
             negative_count = sum(
@@ -73,14 +89,23 @@ async def check_activity_and_mood():
             if messages_count == 0:
                 activity = 0
                 mood = 0
+                errors_count = 0
+                ban_words_count = 0
+                aggressive_words_count = 0
             else:
+                errors_count = technical_error / messages_count
+                ban_words_count = comment_contain_ban_words / messages_count
+                aggressive_words_count = toxicity / messages_count
                 activity = users_count / messages_count
                 mood = (positive_count - negative_count) / messages_count
             # Обновление метрик
             if room_id not in metrics_history:
-                metrics_history[room_id] = {"activity": [], "mood": []}
-            metrics_history[room_id]["activity"].append(activity)
-            metrics_history[room_id]["mood"].append(mood)
+                metrics_history[room_id] = {"activity": [], "mood": [], "errors": [], "ban_words": [],
+                                            "aggressive_words": []}
+
+            metrics_history[room_id]["errors"].append(errors_count)
+            metrics_history[room_id]["ban_words"].append(ban_words_count)
+            metrics_history[room_id]["aggressive_words"].append(aggressive_words_count)
 
             # Отправка уведомления, если активность или настроение ниже пороговых значений
             if activity < threshold_activity:
