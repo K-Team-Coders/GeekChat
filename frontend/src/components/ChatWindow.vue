@@ -13,7 +13,7 @@
       </div>
     </div>
   </router-link>
-  
+
     <div
       class="mx-24 w-full outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500">
       <!-- Блок процесса загрузки -->
@@ -27,10 +27,10 @@
             <div :class="`${message.from[1]}`" v-for="message in spliceMessages">
               
               <div :class="`${message.from[0]}`">
-                <p class="text-orange-200">{{message.username}}</p>
+                <p class="text-orange-300">{{message.username}}</p>
                 <hr>
-                <p class="text-gray-200">{{message.message}}</p>
-                <p class="text-gray-200 text-xs w-full text-end">{{dataFromatter(message.date)}}</p>
+                <p :class="`${message.from[2]}`">{{message.message}}</p>
+                <p class="text-gray-400 text-xs w-full text-end">{{dataFromatter(message.date)}}</p>
               </div>
             </div>
          
@@ -121,9 +121,9 @@ export default {
     isMessageFromMe(name) {
       switch (name) {
         case "me":
-          return ['max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3', 'flex justify-end mb-4 cursor-pointer']
+          return ['max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3', 'flex justify-end mb-4 cursor-pointer', 'text-gray-200 dark:text-gray-200']
         case "not_me":
-          return ['max-w-96 dark:bg-white bg-slate-500 rounded-lg p-3 h-20 gap-3', 'flex mb-4 cursor-pointer']
+          return ['max-w-96 dark:bg-white bg-slate-500 rounded-lg p-3 h-20 gap-3', 'flex mb-4 cursor-pointer', 'text-gray-700 dark:text-gray-700']
       }
     },
 

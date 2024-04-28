@@ -1,7 +1,7 @@
 <template>
     <LineChartGenerator
       :chart-options="chartOptions"
-      :chart-data="chartData"
+      :chart-data="getData"
       :chart-id="chartId"
       :dataset-id-key="datasetIdKey"
       :plugins="plugins"
@@ -59,25 +59,52 @@
       plugins: {
         type: Array,
         default: () => []
+      },
+      label: String,
+      datasets: Array,
+      color: String,
+    },
+    computed: {
+      getData(){
+        let chart = {
+          labels: [
+            '00:00 ',
+            '01:00 ',
+            '02:02 ',
+            '03:02 ',
+            '04:02 ',
+            '05:02 ',
+            '06:02 '
+          ],
+          datasets: [
+            {
+              label: this.label,
+              backgroundColor: this.color,
+              data: [1, 30, 25, 10, 7, 3, 0]
+            }
+          ]
+        }
+        return chart
       }
     },
+
     data() {
       return {
         chartData: {
           labels: [
-            'January',
-            'February',
-            'March',
-            'April',
-            'May',
-            'June',
-            'July'
+            '00:00 ',
+            '00:01 ',
+            '00:02 ',
+            '00:02 ',
+            '00:02 ',
+            '00:02 ',
+            '00:02 '
           ],
           datasets: [
             {
-              label: 'Data One',
-              backgroundColor: '#f87979',
-              data: [40, 39, 10, 40, 39, 80, 40]
+              label: 'Уровень активности',
+              backgroundColor: '#ed6a32',
+              data: [1, 30, 25, 10, 7, 3, 0]
             }
           ]
         },
