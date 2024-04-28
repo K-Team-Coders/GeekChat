@@ -1,5 +1,6 @@
 <template>
   <div class="flex w-full justify-center p-6 gap-4 duration-500 min-h-screen">
+    <router-link to="/">
     <div class="flex-col">
       <div class="flex font-stengazeta uppercase text-activeText text-8xl">
         Пример чата
@@ -8,9 +9,11 @@
         *демонстративный
       </div>
       <div class="flex justify-start w-full bottom-8">
-      <Switcher />
+        <Switcher />
+      </div>
     </div>
-    </div>
+  </router-link>
+  
     <div
       class="mx-24 w-full outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500">
       <!-- Блок процесса загрузки -->
@@ -20,34 +23,20 @@
           <!-- Блок ответов -->
           <div class="h-[85vh] overflow-y-auto p-16 w-full mb-16">
 
-            <!-- Входящее сообщение -->
-            <div class="flex mb-4 cursor-pointer">
-              <div class="w-9 h-9 rounded-full flex items-center justify-center ml-2">
-                <img src="https://placehold.co/200x/b7a8ff/ffffff.svg?text=Я&font=Lato" alt="My Avatar"
-                  class="w-8 h-8 rounded-full" />
-              </div>
-              <div class="max-w-96 dark:bg-white bg-slate-200 rounded-lg p-3 h-20 gap-3">
-                <p class="text-orange-700">127.0.0.1</p>
-                <hr>
-                <p class="text-gray-700">Сообщение мне?</p>
-                <p class="text-gray-400 text-xs w-full text-end">20:00</p>
-              </div>
-            </div>
 
-            <!-- Исходящее сообщение -->
-            <div class="flex justify-end mb-4 cursor-pointer">
-              <div class="max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3">
-                <p class="text-gray-200">127.0.0.2</p>
+            <div :class="`${message.from[1]}`" v-for="message in spliceMessages">
+              
+              <div :class="`${message.from[0]}`">
+                <p class="text-orange-200">{{message.username}}</p>
                 <hr>
-                <p class="text-white">Сообщение тебе?</p>
-                <p class="text-gray-200 text-xs w-full text-end">20:00</p>
-              </div>
-              <div class="w-9 h-9 rounded-full flex items-center justify-center ml-2">
-                <img src="https://placehold.co/200x/b7a8ff/ffffff.svg?text=Я&font=Lato" alt="My Avatar"
-                  class="w-8 h-8 rounded-full" />
+                <p class="text-gray-200">{{message.message}}</p>
+                <p class="text-gray-200 text-xs w-full text-end">{{dataFromatter(message.date)}}</p>
               </div>
             </div>
+         
+
             
+
           </div>
           <div class="absolute bottom-3 w-full flex items-center gap-2 justify-center px-2">
             <input v-model="message"
@@ -70,13 +59,15 @@
       </div>
 
       <div v-else-if="isError" class="flex justify-center items-center h-screen">
-        <div class="rounded-full h-20 w-20  items-center justify-center flex text-red-600 uppercase font-stengazeta">Произошла ошибка!</div>
+        <div class="rounded-full h-20 w-20  items-center justify-center flex text-red-600 uppercase font-stengazeta">
+          Произошла ошибка!</div>
       </div>
     </div>
-    
+
   </div>
 </template>
 <script>
+import axios from "axios";
 import BaseIcon from "./BaseIcon.vue";
 import Switcher from "./Switcher.vue";
 export default {
@@ -90,9 +81,17 @@ export default {
       return this.$store.state.darkMode;
     },
 
-    spliceMessages(){
+    spliceMessages() {
       let messages = this.messages;
-      
+      messages.forEach((message) => {
+        if (message.username == this.myname) {
+          message["from"] = this.isMessageFromMe("me")
+        }
+        else {
+          message["from"] = this.isMessageFromMe("not_me")
+        }
+      })
+      return messages
     }
   },
 
@@ -105,29 +104,73 @@ export default {
       myname: '',
       isError: false,
       isReady: false,
+      connection_data: null,
     };
   },
 
   methods: {
     sendMessage() {
       if (this.message.trim() !== "") {
-        this.connection.send(String({ type: "communication", message: this.message }));
+        this.connection_data.send(this.message);
+        console.log("Отправлено:")
+        console.log(this.message)
         this.message = "";
       }
     },
+
+    isMessageFromMe(name) {
+      switch (name) {
+        case "me":
+          return ['max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3', 'flex justify-end mb-4 cursor-pointer']
+        case "not_me":
+          return ['max-w-96 dark:bg-white bg-slate-500 rounded-lg p-3 h-20 gap-3', 'flex mb-4 cursor-pointer']
+      }
+    },
+
+    dataFromatter(data) {
+        let date = new Date(data);
+
+        // Получаем день, месяц, год, часы, минуты и секунды
+        let day = date.getDate();
+        let month = date.getMonth() + 1; // Месяцы начинаются с 0, поэтому добавляем 1
+        let year = date.getFullYear();
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        let seconds = date.getSeconds();
+
+        // Форматируем день, месяц, часы, минуты и секунды, чтобы они были двузначными, если меньше 10
+        day = day < 10 ? "0" + day : day;
+        month = month < 10 ? "0" + month : month;
+        hours = hours < 10 ? "0" + hours : hours;
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        // Создаем строку в формате "день.месяц.год часы:минуты:секунды"
+        let formattedDate = hours + ":" + minutes + ":" + seconds + " " + day + "." + month + "." + year
+        return formattedDate
+    },
   },
 
-  mounted() {
+  async mounted() {
     this.isLoading = true;
+    await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/register`)
+      .then((response) => {
+        console.log('Токен получен:');
+        console.log(response.data);
+        const name = response.data.token;
+        this.myname = name;
+      })
+
+    console.log(this.myname);
     console.log("Подключение к веб-сокету...");
     let connection = new WebSocket(
-      `ws://${process.env.VUE_APP_CHAT_SOCKET_IP}/ws/session_id=${this.sessionID}`
+      `ws://${process.env.VUE_APP_CHAT_SOCKET_IP}/ws/${this.sessionID}/${this.myname}`
     );
 
     connection.onopen = (event) => {
       console.log(event);
       console.log("Подключение успешно!");
-      this.connection.send(String({ type: "service", message: "WAI?" }));
+      this.connection_data = connection;
       this.isLoading = false;
     };
 
@@ -151,12 +194,10 @@ export default {
     };
 
     connection.onmessage = (event) => {
-      if (JSON.parse(event.data.type) == "service"){
-        this.myname = event.data.message
-      }
-      else{
-        this.messages.push(event.data);
-      }
+      console.log("Получено:");
+      console.log(JSON.parse(event.data));
+      let parsed_message = JSON.parse(event.data)
+      this.messages.push(parsed_message);
     };
   },
 };
