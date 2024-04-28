@@ -11,6 +11,8 @@ from fastapi import FastAPI, WebSocket, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+
 from fastApi.helper_funcion import *
 from notebooks.toxicity import toxicityAnalisis
 from notebooks.ban_words import containsBanWords
@@ -64,13 +66,20 @@ threshold_activity = 0
 threshold_mood = 0
 
 
+class ThreshHold(BaseModel):
+    activity: float
+    mood: float
+
+
 async def check_activity_and_mood():
     while True:
         await asyncio.sleep(60)  # Подождать 60 секунд
         current_time = datetime.now()
+        logger.info(current_time)
         for room_id, room_data in rooms.items():
             users_count = len(room_data.get("users", []))
             messages_count = len(room_data.get("messages", []))
+            logger.debug(f"количество пользователей: {users_count}, количество сообщений:{messages_count}")
             toxicity = 0
             comment_contain_ban_words = 0
             technical_error = 0
@@ -109,6 +118,8 @@ async def check_activity_and_mood():
                 metrics_history[room_id] = {"activity": [], "mood": [], "errors": [], "ban_words": [],
                                             "aggressive_words": []}
 
+            metrics_history[room_id]["activity"].append(activity)
+            metrics_history[room_id]["mood"].append(mood)
             metrics_history[room_id]["errors"].append(errors_count)
             metrics_history[room_id]["ban_words"].append(ban_words_count)
             metrics_history[room_id]["aggressive_words"].append(aggressive_words_count)
@@ -178,6 +189,14 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, token: str):
     await asyncio.gather(check_activity_and_mood())
 
 
+@app.post("/threshold")
+async def threshold(threshold: ThreshHold):
+    global threshold_mood
+    global threshold_activity
+    threshold_mood = threshold.mood
+    threshold_activity = threshold_activity
+
+
 @app.get("/register")
 async def register_user():
     # Генерация уникального токена пользователя
@@ -218,21 +237,21 @@ async def get_room_mood(room_id: str):
 
 
 @app.get("/rooms/{room_id}/ban_words")
-async def get_room_mood(room_id: str):
+async def get_room_ban_words(room_id: str):
     # Получение информации о наличии нецензурной лексики в комнате
     return rooms.get(room_id, {}).get("ban_words", 0)
 
 
 @app.get("/rooms/{room_id}/errors")
-async def get_room_mood(room_id: str):
+async def get_room_errors(room_id: str):
     # Получение технических ошибок в комнате
     return rooms.get(room_id, {}).get("errors", 0)
 
 
 @app.get("/rooms/{room_id}/aggressive_words/")
-async def get_room_mood(room_id: str):
+async def get_room_aggressive_words(room_id: str):
     # Получение информации о наличии агрессивных слов в комнате
-    return rooms.get(room_id, {}).get("mood", 0)
+    return rooms.get(room_id, {}).get("aggressive_words", 0)
 
 
 @app.get("/rooms/{room_id}/activity/history")
@@ -248,21 +267,21 @@ async def get_room_mood_history(room_id: str):
 
 
 @app.get("/rooms/{room_id}/errors/history")
-async def get_room_errors(room_id: str):
+async def get_room_errors_history(room_id: str):
     # Получение количества ошибок в сессии для комнаты
-    return JSONResponse(content={"errors": metrics_history.get(room_id, {}).get("errors", [])})
+    return metrics_history.get(room_id, {}).get("errors", [])
 
 
 @app.get("/rooms/{room_id}/ban_words/history")
-async def get_room_ban_words(room_id: str):
+async def get_room_ban_words_history(room_id: str):
     # Получение количества нецензурных слов в сессии для комнаты
-    return JSONResponse(content={"ban_words": metrics_history.get(room_id, {}).get("ban_words", [])})
+    return metrics_history.get(room_id, {}).get("ban_words", [])
 
 
 @app.get("/rooms/{room_id}/aggressive_words/history")
-async def get_room_aggressive_words(room_id: str):
+async def get_room_aggressive_words_history(room_id: str):
     # Получение количества агрессивных слов в сессии для комнаты
-    return JSONResponse(content={"aggressive_words": metrics_history.get(room_id, {}).get("aggressive_words", [])})
+    return metrics_history.get(room_id, {}).get("aggressive_words", [])
 
 
 if __name__ == '__main__':
