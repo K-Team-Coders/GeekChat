@@ -8,23 +8,23 @@
             <div class="flex flex-row"> 
                 <div class=" w-full px-2 uppercase bg-orange-500 py-3 text-activeText font-monster font-bold bg- mt-4 text-center text-md">
                     Оценка активности: 
-                    <p>{{ getactivity }}</p>
+                    <p>{{ getactivity[0] }}</p>
                 </div>
                 <div class=" w-full px-2 uppercase bg-green-500 py-3 text-activeText font-monster font-bold  mt-4 text-center text-md">
                     Оценка настроения: 
-                    <p>{{ getmood }}</p>
+                    <p>{{ getmood[0] }}</p>
                 </div>
                 <div class=" w-full px-2 uppercase text-activeText bg-red-500 py-3 font-monster font-bold bg- mt-4 text-center text-md">
                     Запрещенные слова/мин.: 
-                    <p>{{ getbanwords }}</p>
+                    <p>{{ getbanwords[0] }}</p>
                 </div>
                 <div class=" w-full px-2 uppercase text-activeText bg-purple-500 py-3 font-monster font-bold bg- mt-4 text-center text-md">
                     Токсичные слова/мин.: 
-                    <p>{{getagressive}}</p>
+                    <p>{{getagressive[0]}}</p>
                 </div>
                 <div class=" w-full px-2 uppercase text-activeText bg-indigo-500 py-3 font-monster font-bold bg- mt-4 text-center text-md">
                     Тех. неполадки/мин.: 
-                    <p>{{geterrors}}</p>
+                    <p>{{geterrors[0]}}</p>
                 </div>
             </div>
             <div class="w-full grid grid-cols-3 ">
@@ -128,11 +128,11 @@ export default {
             isReady: false,
             connection_data: null,
             current_users: [],
-            activity: 0,
-            mood: 0,
-            ban_words: 0,
-            errors: 0,
-            aggresice_words: 0,
+            activity: [0],
+            mood: [0],
+            ban_words: [0],
+            errors: [0],
+            aggresice_words: [0],
             activity_history: 0,
             mood_history: 0,
             ban_words_history: 0,
