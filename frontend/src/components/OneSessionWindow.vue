@@ -6,11 +6,25 @@
         <div
             class="ml-72 w-full outline-dashed bg-frameBackground rounded-xl outline-[1px] outline-outlineColor duration-500">
             <div class="flex flex-row"> 
-                <div class=" w-full px-2 uppercase text-activeText font-monster font-bold  mt-4 text-center text-md">
-                    Оценка активности: 65
+                <div class=" w-full px-2 uppercase bg-orange-500 py-3 text-activeText font-monster font-bold bg- mt-4 text-center text-md">
+                    Оценка активности: 
+                    <p>{{ getactivity[0] }}</p>
                 </div>
-                <div class=" w-full px-2 uppercase text-activeText font-monster font-bold  mt-4 text-center text-md">
-                    Оценка настроения: 42
+                <div class=" w-full px-2 uppercase bg-green-500 py-3 text-activeText font-monster font-bold  mt-4 text-center text-md">
+                    Оценка настроения: 
+                    <p>{{ getmood[0] }}</p>
+                </div>
+                <div class=" w-full px-2 uppercase text-activeText bg-red-500 py-3 font-monster font-bold bg- mt-4 text-center text-md">
+                    Запрещенные слова/мин.: 
+                    <p>{{ getbanwords[0] }}</p>
+                </div>
+                <div class=" w-full px-2 uppercase text-activeText bg-purple-500 py-3 font-monster font-bold bg- mt-4 text-center text-md">
+                    Токсичные слова/мин.: 
+                    <p>{{getagressive[0]}}</p>
+                </div>
+                <div class=" w-full px-2 uppercase text-activeText bg-indigo-500 py-3 font-monster font-bold bg- mt-4 text-center text-md">
+                    Тех. неполадки/мин.: 
+                    <p>{{geterrors[0]}}</p>
                 </div>
             </div>
             <div class="w-full grid grid-cols-3 ">
@@ -28,10 +42,10 @@
                     <div :class="`${message.from[1]}`" v-for="message in spliceMessages">
 
                         <div :class="`${message.from[0]}`">
-                            <p class="text-orange-200">{{ message.username }}</p>
+                            <p class="text-orange-400">{{ message.username }}</p>
                             <hr>
-                            <p class="text-gray-200">{{ message.message }}</p>
-                            <p class="text-gray-200 text-xs w-full text-end">{{ dataFromatter(message.date) }}</p>
+                            <p :class="`${message.from[2]}`">{{ message.message }}</p>
+                            <p class="text-gray-400 text-xs w-full text-end">{{ dataFromatter(message.date) }}</p>
                         </div>
                     </div>
                 </div>
@@ -43,9 +57,11 @@
                         <p class="text-activeText py-2 text-center rounded-xl mb-4 text-xl font-medium duration-500">
                             Эфир обработанных сообщений
                         </p>
-                        <input
-                            class="w-full rounded-sm h-10 border-[0.1px] bg-transparent px-4 text-activeText placeholder:text-unactiveText border-neutral-500 dark:border-neutral-200 duration-500"
-                            type="text" placeholder="Поиск событий" />
+                        <ul class="text-activeText w-full h-[25vh] overflow-y-scroll font-monster font-bold">Текущие пользователи:
+                            <li class="font-monster" v-for="(user,index) in getusers">
+                                {{ index+1 }}. {{ user }}
+                            </li>
+                        </ul>
                         <div class="w-full overflow-y-scroll custom-scrollbar duration-500">
                             <div v-for="event in dynamicNews" :key="event.id"
                                 class="text-activeText pt-2 w-full duration-500 ">
@@ -76,9 +92,12 @@
                 </div>
                 
             </div>
-            <div class="w-full grid grid-cols-2 gap-4 mt-3">
-                <LineChartVue />
-                <LineChartVue />
+            <div class="w-full grid grid-cols-5 gap-4 mt-3">
+                <LineChartVue :color="'orange'" :label="'Активность'"/>
+                <LineChartVue :color="'green'" :label="'Настроение'"/>
+                <LineChartVue :color="'red'" :label="'Токсичность'"/>
+                <LineChartVue :color="'blue'" :label="'Тех. неполадки'"/>
+                <LineChartVue :color="'purple'" :label="'Запрещенные слова'"/>
             </div>
 
 
@@ -108,6 +127,17 @@ export default {
             isError: false,
             isReady: false,
             connection_data: null,
+            current_users: [],
+            activity: [0],
+            mood: [0],
+            ban_words: [0],
+            errors: [0],
+            aggresice_words: [0],
+            activity_history: 0,
+            mood_history: 0,
+            ban_words_history: 0,
+            errors_history: 0,
+            aggresice_words_history: 0,
         };
     },
 
@@ -124,9 +154,9 @@ export default {
         isMessageFromMe(name) {
             switch (name) {
                 case "me":
-                    return ['max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3', 'flex justify-end mb-4 cursor-pointer']
+                    return ['max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3', 'flex justify-end mb-4 cursor-pointer', 'text-gray-200 dark:text-gray-200']
                 case "not_me":
-                    return ['max-w-96 dark:bg-white bg-slate-200 rounded-lg p-3 h-20 gap-3', 'flex mb-4 cursor-pointer']
+                    return ['max-w-96 dark:bg-white bg-slate-200 rounded-lg p-3 h-20 gap-3', 'flex mb-4 cursor-pointer', 'text-gray-700 dark:text-gray-700']
             }
         },
 
@@ -152,6 +182,95 @@ export default {
             let formattedDate = hours + ":" + minutes + ":" + seconds + " " + day + "." + month + "." + year
             return formattedDate
         },
+
+        async getAdminInfo(){
+            await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/users`)
+            .then((response) => {
+                console.log('Пользователи получен:');
+                console.log(response.data);
+                this.current_users = response.data;
+            });
+
+            await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/activity`)
+            .then((response) => {
+                console.log('Активность получена:');
+                console.log(response.data);
+                this.activity = response.data;
+            })
+
+            await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/mood`)
+            .then((response) => {
+                console.log('Настроение получено:');
+                console.log(response.data);
+                this.mood = response.data;
+            })
+
+            await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/ban_words`)
+            .then((response) => {
+                console.log('Запрещенные слова получены:');
+                console.log(response.data);
+                this.ban_words = response.data;
+            })
+
+            await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/errors`)
+            .then((response) => {
+                console.log('Ошибки получены:');
+                console.log(response.data);
+                this.errors = response.data;
+            })
+
+            
+
+            await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/aggressive_words`)
+            .then((response) => {
+                console.log('Агр слова получены:');
+                console.log(response.data);
+                this.aggresive_words = response.data;
+            })
+            
+            await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/activity/history`)
+            .then((response) => {
+                console.log('Активность (история) получена:');
+                console.log(response.data);
+                this.activity = response.data.activity;
+            })
+
+            await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/mood/history`)
+            .then((response) => {
+                console.log('Настроение (история) получено:');
+                console.log(response.data);
+                this.mood_history = response.data.mood;
+            })
+
+            await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/ban_words/history`)
+            .then((response) => {
+                console.log('запрещенные слова (история) получено:');
+                console.log(response.data);
+                this.ban_words_history = response.data.ban_words;
+            })
+
+            await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/errors/history`)
+            .then((response) => {
+                console.log('ошибки (история) получено:');
+                console.log(response.data);
+                this.errors_history = response.data.ban_words;
+            })
+
+            
+
+            await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/rooms/1/aggressive_words/history`)
+            .then((response) => {
+                console.log('агрессия (история) получено:');
+                console.log(response.data);
+                this.aggresice_words_history = response.data.errors;
+            })
+
+
+
+
+
+
+        }
     },
 
     computed: {
@@ -159,6 +278,29 @@ export default {
             return this.$store.state.darkMode;
         },
 
+        getusers(){
+            return this.current_users
+        },
+
+        getactivity(){
+            return this.activity
+        },
+
+        getmood(){
+            return this.mood
+        },
+
+        getbanwords(){
+            return this.ban_words
+        },
+
+        geterrors(){
+            return this.errors
+        },
+
+        getagressive(){
+            return this.aggresice_words
+        }, 
         spliceMessages() {
             let messages = this.messages;
             messages.forEach((message) => {
@@ -172,7 +314,6 @@ export default {
             return messages
         }
     },
-
     async mounted() {
         this.isLoading = true;
         await axios.get(`http://${process.env.VUE_APP_CHAT_SOCKET_IP}/register`)
@@ -182,12 +323,15 @@ export default {
                 const name = response.data.token;
                 this.myname = name;
             })
-
+        
         console.log(this.myname);
         console.log("Подключение к веб-сокету...");
         let connection = new WebSocket(
             `ws://${process.env.VUE_APP_CHAT_SOCKET_IP}/ws/${this.sessionID}/${this.myname}`
         );
+        setInterval(this.getAdminInfo, 5000);
+        
+
 
         connection.onopen = (event) => {
             console.log(event);
