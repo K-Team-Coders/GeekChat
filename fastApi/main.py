@@ -141,7 +141,7 @@ async def check_activity_and_mood():
                 metrics_history[room_id] = {"activity": [], "mood": [], "errors": [], "ban_words": [],
                                             "aggressive_words": []}
 
-            rooms[room_id] = {"activity": [], "mood": [], "errors": [], "ban_words": [], "aggressive_words": []}
+            rooms[room_id] = {"users": [], "messages": [], "activity": [], "mood": [], "errors": [], "ban_words": [], "aggressive_words": []}
             rooms[room_id]["activity"].append(str(activity))
             rooms[room_id]["mood"].append(str(mood))
             rooms[room_id]["errors"].append(str(errors_count))
